@@ -19,6 +19,7 @@ function ReviewsContent() {
   const [selectedReview, setSelectedReview] = useState(null)
   const [localAssignTarget, setLocalAssignTarget] = useState(null)
   const [toast, setToast] = useState(null)
+  const [pulseDate, setPulseDate] = useState(null)
 
   const pmOptions = [
     { name: "Sai", team: "Wealth" },
@@ -177,7 +178,15 @@ function ReviewsContent() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 pb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">INDMoney Insights</h1>
-          <p className="text-sm text-slate-500 mt-1">Direct feedback pulse across all platforms</p>
+          <div className="flex flex-col gap-1 mt-1">
+             <div className="flex items-center gap-2">
+               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Direct feedback pulse across all platforms</span>
+             </div>
+             <div className="flex items-center gap-2">
+               <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">📡 Pulse Generated: {pulseDate ? new Date(pulseDate).toLocaleString() : 'Live Snapshot'}</span>
+               <a href="https://share.streamlit.io/" target="_blank" className="text-[9px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest border-l border-slate-200 pl-2 underline decoration-slate-200 underline-offset-2">Refresh Data in Controller ↗</a>
+            </div>
+          </div>
           {category && (
             <div className="mt-3 flex items-center gap-2">
                <span className="text-[10px] font-bold uppercase bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-md">Category: {category}</span>
