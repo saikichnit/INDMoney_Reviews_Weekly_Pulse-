@@ -28,7 +28,7 @@ class IntelligenceOrchestrator:
         
         self.db = DatabaseManager(abs_db_path)
         self.ingestor = IngestionService(self.db)
-        self.preprocessor = PreprocessingService()
+        self.preprocessor = PreprocessingService(self.db)
         self.discoverer = DiscoveryService()
         self.classifier = ClassificationService()
         self.note_gen = NoteService()
