@@ -4,6 +4,9 @@ import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+
 function ReviewsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
