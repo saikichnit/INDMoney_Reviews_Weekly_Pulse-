@@ -12,17 +12,16 @@ if ROOT_DIR not in sys.path:
 
 st.set_page_config(page_title="INDPlus Controller", page_icon="💎", layout="wide")
 
-st.title("💎 INDPlus Strategic Intelligence Controller")
-st.caption("Backend Management Console | Root Deployment v4.0")
+st.title("💎 INDPlus Strategic Intelligence")
+st.caption("Backend Management Console | v10.0 (Clean Reset)")
 
 # Diagnostic Import Area
 try:
-    # Use Root Imports (Services and Storage are in root)
+    # Root Imports
     from services.intelligence_orchestrator import IntelligenceOrchestrator
     from storage.db import DatabaseManager
     
-    # If we get here, the system is healthy
-    st.sidebar.success("✅ System Core Loaded")
+    st.sidebar.success("✅ System Core v10.0 Loaded")
     
     # Sidebar Configuration
     st.sidebar.header("🕹️ Control Panel")
@@ -36,8 +35,9 @@ try:
 
     if st.sidebar.button("🚀 TRIGGER EXECUTIVE PULSE"):
         with st.status("Initializing Strategic Synthesis...", expanded=True) as status:
+            # Change DB Path for this session to avoid schema conflicts
             st.write("🔍 Layer 1-3: Ingesting & Deduplicating Reviews...")
-            orchestrator = IntelligenceOrchestrator()
+            orchestrator = IntelligenceOrchestrator(db_path="data/pulse_v10.db")
             
             st.write("🧠 Layer 4-5: LLM Theme Extraction & Synthesis...")
             report_id = orchestrator.run_pipeline(
@@ -60,34 +60,27 @@ try:
     with col1:
         st.subheader("📊 Recent Strategic Pulses")
         try:
-            db = DatabaseManager()
+            # Check v10 DB
+            db = DatabaseManager("data/pulse_v10.db")
             with db._get_connection() as conn:
                 import pandas as pd
-                # Flexible column check to prevent 'no such column' crashes
                 try:
                     df = pd.read_sql_query("SELECT id, review_count, created_at FROM reports ORDER BY id DESC LIMIT 5", conn)
                 except Exception:
-                    # Fallback for legacy schema or slightly different naming
-                    try:
-                        df = pd.read_sql_query("SELECT id, review_count, ingested_at FROM reports ORDER BY id DESC LIMIT 5", conn)
-                    except Exception:
-                        df = pd.read_sql_query("SELECT id, review_count FROM reports ORDER BY id DESC LIMIT 5", conn)
+                    df = pd.read_sql_query("SELECT id, review_count FROM reports ORDER BY id DESC LIMIT 5", conn)
                 
                 if not df.empty:
                     st.dataframe(df, use_container_width=True)
                 else:
-                    st.info("No pulses generated yet. Trigger your first report from the sidebar.")
-        except Exception as e:
-            st.info("💎 Welcome! Trigger your first Strategic Pulse to initialize the intelligence hub.")
-            st.sidebar.info("System Ready for Initial Pulse")
+                    st.info("No pulses generated in this environment yet. Trigger your first report.")
+        except Exception:
+            st.info("Welcome to the Clean Environment! Trigger a Pulse to initialize the intelligence hub.")
 
     with col2:
         st.subheader("🏢 Stakeholder Archives")
-        st.info("Live Strategic Doc sync is active. Updates will appear in your Google Doc after each pulse.")
+        st.info("Live Strategic Doc sync is active.")
 
 except Exception as e:
-    st.error("🚨 CRITICAL BOOT ERROR DETECTED")
-    st.info("The Safe Bootloader caught a crash during module initialization. See details below:")
+    st.error("🚨 CRITICAL BOOT ERROR")
+    st.info("If you see this, copy the traceback below:")
     st.code(traceback.format_exc())
-    
-    st.warning("ENGINEER NOTE: This indicates a deployment misalignment. Ensure 'services/' and 'storage/' are in the root directory.")
