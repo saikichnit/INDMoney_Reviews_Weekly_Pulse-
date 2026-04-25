@@ -48,6 +48,24 @@ try:
             
             if report_id:
                 st.write("📄 Layer 6-7: Generating Elite PDF & Education Sync...")
+                
+                # [NEW] Live Bridge: Save for Frontend and Auto-Push
+                try:
+                    latest_data = {
+                        "report_id": report_id,
+                        "generated_at": datetime.now().isoformat(),
+                        "payload": combined_payload
+                    }
+                    os.makedirs("data", exist_ok=True)
+                    with open("data/latest_pulse.json", "w") as f:
+                        json.dump(latest_data, f, indent=2)
+                    
+                    # Optional: Auto-push to GitHub if git is configured (best-effort)
+                    os.system("git add data/latest_pulse.json && git commit -m 'System: Auto-synced latest pulse' && git push origin stable")
+                    st.sidebar.success("📡 Frontend Sync Active")
+                except Exception as sync_err:
+                    st.sidebar.warning(f"Frontend Sync Delayed: {sync_err}")
+
                 status.update(label=f"✅ Pulse Generated! Report ID: {report_id}", state="complete")
                 st.balloons()
                 st.success(f"Pulse successfully synchronized across Email, PDF, and Google Workspace.")
