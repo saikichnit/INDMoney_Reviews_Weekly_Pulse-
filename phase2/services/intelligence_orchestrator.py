@@ -26,8 +26,26 @@ class IntelligenceOrchestrator:
         self.pdf_service = PDFService()
 
     def run_pipeline(self, fee_types="exit_load,brokerage_fee", max_reviews=300, days=60):
-        # 1-4. Ingestion, Preprocessing, Discovery, Classification
-        raw_data = self.ingestor.fetch_from_local("data/raw", limit=max_reviews, days=days)
+        # Ensure directory structure
+        os.makedirs("data/raw", exist_ok=True)
+        os.makedirs("data/reports/pdf", exist_ok=True)
+        os.makedirs("data/reports/json", exist_ok=True)
+
+        # 1. Ingestion: Try Live API first if in Cloud, fallback to local
+        try:
+            from services.ingestion_service.real_ingestor import RealIngestor
+            real_ingestor = RealIngestor(self.db)
+            print("🚀 Cloud Mode: Fetching LIVE reviews from App Stores...")
+            raw_data = real_ingestor.fetch_reviews(limit=max_reviews)
+        except Exception as e:
+            print(f"⚠️ Live Ingestion failed, falling back to local: {e}")
+            raw_data = self.ingestor.fetch_from_local("data/raw", limit=max_reviews, days=days)
+
+        if not raw_data:
+            print("❌ No reviews found to process.")
+            return None
+
+        # 2-4. Preprocessing, Discovery, Classification
         filtered_data = self.preprocessor.process(raw_data)
         signals = self.discoverer.discover_signals(filtered_data)
         themes_data = self.classifier.classify_themes(signals)
