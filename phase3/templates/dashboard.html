@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>INDMoney Review Pulse - Phase 3 Advanced</title>
+    <style>
+        :root { --primary: #3b82f6; --success: #10b981; --dark: #1e293b; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: var(--dark); margin: 0; padding: 40px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .main-grid { display: grid; grid-template-columns: 1fr 350px; gap: 30px; }
+        .report-view { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .tag { display: inline-block; background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin: 0 5px 5px 0; }
+        .debug-box { background: #f8fafc; padding: 15px; border-radius: 8px; font-size: 0.75rem; color: #64748b; margin-top: 20px; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Advanced Review Pulse <span style="font-size: 0.9rem; font-weight: 400; color: #64748b;">PHASE 3 (Parallel LLMs)</span></h1>
+            <button class="btn" onclick="generateV3()">Trigger Parallel Analysis</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <small>Volume Trend</small>
+                <h2 style="margin: 5px 0;">{{ trends.volume_change_pct }}%</h2>
+                <span style="color: {{ 'green' if trends.status == 'Increased' else 'red' }}">{{ trends.status }}</span>
+            </div>
+            <div class="stat-card">
+                <small>Total Reports</small>
+                <h2 style="margin: 5px 0;">{{ reports|length }}</h2>
+                <span>Saved in DB</span>
+            </div>
+            <div class="stat-card">
+                <small>LLM Models</small>
+                <h2 style="margin: 5px 0;">2</h2>
+                <span>Groq + Gemini</span>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div id="reportContent" class="report-view">
+                <h2>Select a pulse to view insights</h2>
+                <p>Click on any report in the history sidebar to see the aggregated output from the dual-LLM architecture.</p>
+            </div>
+            
+            <div class="stat-card" style="max-height: 600px; overflow-y: auto;">
+                <h3>History</h3>
+                <div id="historyList">
+                    {% for r in reports %}
+                    <div style="padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer;" onclick="viewReport({{ r.id }})">
+                        <strong>Pulse #{{ r.id }}</strong><br>
+                        <small>{{ r.created_at[:10] }} | {{ r.review_count }} reviews</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generateV3() {
+            alert("Starting Phase 3 Parallel Analysis (Groq + Gemini)...");
+            const res = await fetch('/api/v3/generate', { method: 'POST' });
+            const data = await res.json();
+            if (data.report_id) {
+                location.reload();
+            }
+        }
+
+        async function viewReport(id) {
+            // Using Phase 2 endpoint for data retrieval as it's shared
+            const res = await fetch(`http://localhost:8001/api/reports/${id}`);
+            const r = await res.json();
+            
+            const content = document.getElementById('reportContent');
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Weekly Pulse #${r.id}</h2>
+                    <span class="tag" style="background: #fef3c7; color: #92400e;">Dual-LLM Aggregated</span>
+                </div>
+                <p style="font-size: 1.1rem; line-height: 1.6;">${r.summary}</p>
+                
+                <h3>Key Themes</h3>
+                <div>${r.themes.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                
+                <h3>Action Recommendations</h3>
+                <ul>${r.action_items.map(a => `<li>${a}</li>`).join('')}</ul>
+                
+                <div class="debug-box">
+                    <strong>Architecture Metadata:</strong><br>
+                    Aggregation Strategy: Merge/Fallback<br>
+                    Primary: Groq (Llama 3 70B)<br>
+                    Parallel: Gemini (Flash 2.0)
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

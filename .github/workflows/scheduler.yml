@@ -1,0 +1,68 @@
+name: Weekly Review Pulse Scheduler
+
+on:
+  schedule:
+    # 3:35 PM IST is 10:05 AM UTC (IST = UTC + 5:30)
+    - cron: '05 10 * * 1'
+  workflow_dispatch:
+    inputs:
+      max_reviews:
+        description: 'Max reviews to process'
+        default: '1000'
+      weeks:
+        description: 'Time window in weeks'
+        default: '8'
+
+jobs:
+  weekly-pulse:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-with: '3.9'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r phase1/requirements.txt || true
+          pip install fastapi uvicorn pandas requests python-dotenv pyyaml google-generativeai groq apscheduler pytz
+
+      - name: Start Backend Service
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: 587
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/phase2:$(pwd)/phase3
+          python phase2/main.py &
+          sleep 10 # Wait for server to start
+
+      - name: Generate Weekly Pulse
+        run: |
+          python phase4/cli/pulse_cli.py generate-report \
+            --name "Stakeholder" \
+            --max-reviews ${{ github.event.inputs.max_reviews || 1000 }} \
+            --weeks ${{ github.event.inputs.weeks || 8 }}
+        
+      - name: Send Email Notification
+        run: |
+          # Get the latest report ID from the CLI list
+          REPORT_ID=$(python phase4/cli/pulse_cli.py list-reports | head -n 4 | tail -n 1 | awk '{print $1}')
+          echo "Sending Report ID: $REPORT_ID"
+          python phase4/cli/pulse_cli.py send-email \
+            --id $REPORT_ID \
+            --name "Stakeholder" \
+            --email "liger5831@gmail.com"
+
+      - name: Stop Services
+        run: |
+          lsof -ti:8001 | xargs kill -9 || true

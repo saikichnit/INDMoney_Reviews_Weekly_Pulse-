@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INDMoney Review Pulse - Phase 1 MVP</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --accent: #3b82f6;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .report-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        .section { margin-bottom: 25px; }
+        h2 { color: var(--primary); margin-top: 0; }
+        .theme-tag {
+            display: inline-block;
+            background: #ecfdf5;
+            color: #065f46;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        blockquote {
+            border-left: 4px solid var(--accent);
+            margin: 0;
+            padding-left: 20px;
+            font-style: italic;
+            color: #475569;
+        }
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .history {
+            margin-top: 40px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Weekly Review Pulse</h1>
+            <button id="generateBtn" class="btn" onclick="generateReport()">Generate New Report</button>
+        </header>
+
+        <div id="loader" class="loader">Generating pulse report... please wait...</div>
+
+        <div id="reportDisplay" class="report-card">
+            <h2 id="reportTitle">Weekly Review Pulse</h2>
+            <div id="stats" style="font-size: 0.8rem; color: #64748b; margin-bottom: 20px;"></div>
+            <div class="section">
+                <h3>Summary</h3>
+                <p id="reportSummary"></p>
+            </div>
+            <div class="section">
+                <h3>Top Themes</h3>
+                <div id="reportThemes"></div>
+            </div>
+            <div class="section">
+                <h3>Golden Quotes</h3>
+                <div id="reportQuotes"></div>
+            </div>
+            <div class="section">
+                <h3>Action Items</h3>
+                <ul id="reportActions"></ul>
+            </div>
+            <div class="section">
+                <button class="btn" style="background: var(--accent)" onclick="viewEmail()">View Email Draft</button>
+            </div>
+        </div>
+
+        <div class="history">
+            <h3>Recent Reports</h3>
+            <ul id="historyList">
+                {% for report in reports %}
+                <li><a href="#" onclick="loadReport('{{ report }}')">{{ report }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentReport = null;
+
+        async function generateReport() {
+            const btn = document.getElementById('generateBtn');
+            const loader = document.getElementById('loader');
+            const display = document.getElementById('reportDisplay');
+            
+            btn.disabled = true;
+            loader.style.display = 'block';
+            display.style.display = 'none';
+
+            try {
+                const response = await fetch('/generate', { method: 'POST' });
+                const data = await response.json();
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    renderReport(data);
+                }
+            } catch (err) {
+                alert("Failed to generate report.");
+            } finally {
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+
+        async function loadReport(filename) {
+            const response = await fetch(`/report/${filename}`);
+            const data = await response.json();
+            renderReport(data);
+        }
+
+        function renderReport(data) {
+            currentReport = data;
+            document.getElementById('reportDisplay').style.display = 'block';
+            
+            if (data.metadata) {
+                document.getElementById('stats').innerText = `Processed ${data.metadata.reviews_processed} high-signal reviews (filtered from ${data.metadata.original_count})`;
+            }
+
+            document.getElementById('reportSummary').innerText = data.summary;
+            
+            // Themes
+            const themesDiv = document.getElementById('reportThemes');
+            themesDiv.innerHTML = '';
+            (data.themes || []).forEach(t => {
+                const span = document.createElement('span');
+                span.className = 'theme-tag';
+                span.innerText = typeof t === 'string' ? t : (t.theme || t.name || 'Theme');
+                themesDiv.appendChild(span);
+            });
+
+            // Quotes
+            const quotesDiv = document.getElementById('reportQuotes');
+            quotesDiv.innerHTML = '';
+            (data.quotes || []).forEach(q => {
+                const bq = document.createElement('blockquote');
+                bq.innerText = `"${q}"`;
+                quotesDiv.appendChild(bq);
+                quotesDiv.appendChild(document.createElement('br'));
+            });
+
+            // Actions
+            const actionsUl = document.getElementById('reportActions');
+            actionsUl.innerHTML = '';
+            (data.action_items || []).forEach(a => {
+                const li = document.createElement('li');
+                li.innerText = a;
+                actionsUl.appendChild(li);
+            });
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function viewEmail() {
+            if (!currentReport || !currentReport.email_draft) return;
+            const draft = currentReport.email_draft;
+            alert(`Subject: ${draft.subject}\n\n${draft.body}`);
+        }
+    </script>
+</body>
+</html>

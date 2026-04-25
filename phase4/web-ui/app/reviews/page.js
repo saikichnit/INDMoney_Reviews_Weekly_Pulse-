@@ -1,0 +1,373 @@
+'use client'
+
+import React, { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+function ReviewsContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  
+  const [reviews, setReviews] = useState([])
+  const [metrics, setMetrics] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [platform, setPlatform] = useState(searchParams.get('platform') || 'all')
+  const [timeRange, setTimeRange] = useState(searchParams.get('time_range') || '30d')
+  const [sentimentTab, setSentimentTab] = useState(searchParams.get('sentiment') || 'All')
+  const [category, setCategory] = useState(searchParams.get('category') || '')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedReview, setSelectedReview] = useState(null)
+  const [localAssignTarget, setLocalAssignTarget] = useState(null)
+  const [toast, setToast] = useState(null)
+
+  const pmOptions = [
+    { name: "Sai", team: "Wealth" },
+    { name: "Jeeth", team: "Stocks" },
+    { name: "Ram", team: "Credit" },
+    { name: "Tech", team: "Platform" },
+    { name: "Tech Team", team: "Mobile" }
+  ]
+
+  useEffect(() => {
+    fetchData()
+  }, [platform, timeRange, category])
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const [rRes, mRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reviews?platform=${platform}&time_range=${timeRange}${category ? `&category=${encodeURIComponent(category)}` : ''}`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reviews/metrics?platform=${platform}&time_range=${timeRange}${category ? `&category=${encodeURIComponent(category)}` : ''}`)
+      ])
+      setReviews(await rRes.json())
+      setMetrics(await mRes.json())
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAssign = async (reviewId, pmName) => {
+    if (!pmName) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reviews/${reviewId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_to: pmName })
+      })
+      const result = await res.json()
+      
+      setToast({ message: `Assigned to ${pmName}`, subtext: `Ticket Created: ${result.jira_id || 'Pending'}` })
+      setTimeout(() => setToast(null), 3000)
+      
+      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, assigned_to: pmName, jira_id: result.jira_id } : r))
+      
+      // AUTO-CLOSE
+      setSelectedReview(null)
+      setLocalAssignTarget(null)
+      
+    } catch (err) {
+      console.error("Assignment failed", err)
+    }
+  }
+
+  const filteredReviews = reviews.filter(r => {
+    const matchesSentiment = sentimentTab === 'All' || r.sentiment === sentimentTab
+    const matchesSearch = !searchQuery || 
+      r.review_text?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      r.user_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesSentiment && matchesSearch
+  })
+
+  if (loading && !metrics) return <div className="p-20 text-center text-slate-400">Analyzing signals...</div>
+
+  return (
+    <div className="max-w-[1400px] mx-auto px-6 py-12 space-y-12">
+      
+      {/* 1. Header & Primary Filter */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 pb-8">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">INDMoney Insights</h1>
+          <p className="text-sm text-slate-500 mt-1">Direct feedback pulse across all platforms</p>
+          {category && (
+            <div className="mt-3 flex items-center gap-2">
+               <span className="text-[10px] font-bold uppercase bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-md">Category: {category}</span>
+               <button onClick={() => setCategory('')} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-wider transition-colors">✕ Clear</button>
+            </div>
+          )}
+        </div>
+        
+        <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+          {['all', 'android', 'ios'].map(p => (
+            <button
+              key={p}
+              onClick={() => setPlatform(p)}
+              className={`px-5 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all ${platform === p ? 'bg-white text-[#0066CC] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 2. TOP SUMMARY STRIP */}
+      <div className="flex flex-col md:flex-row md:items-center gap-6">
+        <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
+          <span className="bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">{metrics?.total_reviews.toLocaleString()} Reviews</span>
+          <span className="text-slate-300">/</span>
+          <span className="bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">Rating {metrics?.avg_rating} ⭐</span>
+        </div>
+        
+        <div className="ml-auto flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rolling Signal Analysis:</span>
+            <span className="text-[9px] font-bold text-[#0066CC] uppercase tracking-widest">
+              {(() => {
+                const now = new Date()
+                const days = parseInt(timeRange) || 30
+                const start = new Date()
+                start.setDate(now.getDate() - days)
+                return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} – ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+              })()}
+            </span>
+          </div>
+          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+            {['7d', '14d', '30d', '90d', '180d', '240d', '360d'].map(t => (
+              <button
+                key={t}
+                onClick={() => setTimeRange(t)}
+                className={`px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${timeRange === t ? 'bg-white text-[#0066CC] shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-700'}`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. KEY INSIGHTS (CLEAN GRID) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="space-y-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quality Split</p>
+          <div className="space-y-2">
+            {[5, 4, 3, 2, 1].map(stars => (
+              <div key={stars} className="flex items-center gap-2 group">
+                <span className="text-[10px] font-bold text-slate-400 w-4">{stars}★</span>
+                <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-slate-200 rounded-full transition-all" 
+                    style={{ width: `${(metrics?.rating_distribution[stars] / metrics?.total_reviews) * 100}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-medium text-slate-400 w-8 text-right">{metrics?.rating_distribution[stars] || 0}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sentiment</p>
+          <div className="space-y-3">
+             <StatItem label="Positive" count={metrics?.sentiment_split?.Positive} color="text-emerald-600" total={metrics?.total_reviews} />
+             <StatItem label="Neutral" count={metrics?.sentiment_split?.Neutral} color="text-amber-600" total={metrics?.total_reviews} />
+             <StatItem label="Negative" count={metrics?.sentiment_split?.Negative} color="text-rose-600" total={metrics?.total_reviews} />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">User Loyalty</p>
+          <div className="flex flex-col gap-2">
+             <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Promoters</span>
+                <span className="text-xs font-bold text-emerald-600">{metrics?.health_breakdown?.promoters}</span>
+             </div>
+             <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Detractors</span>
+                <span className="text-xs font-bold text-rose-600">{metrics?.health_breakdown?.detractors}</span>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. REVIEWS LIST */}
+      <div className="space-y-6" id="review-feed">
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4 gap-6">
+           <div className="flex gap-6">
+              {['All', 'Positive', 'Neutral', 'Negative'].map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setSentimentTab(tab)}
+                  className={`text-[10px] font-bold uppercase tracking-wider transition-all relative pb-4 ${sentimentTab === tab ? 'text-[#0066CC]' : 'text-slate-400 hover:text-slate-700'}`}
+                >
+                  {tab}
+                  {sentimentTab === tab && <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#0066CC] rounded-full" />}
+                </button>
+              ))}
+           </div>
+
+           <div className="relative flex-1 max-w-md">
+              <input 
+                type="text" 
+                placeholder="Filter reviews..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-lg py-2 pl-9 pr-4 text-xs font-medium focus:outline-none focus:border-slate-400 transition-all placeholder:text-slate-300 text-slate-700"
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]">🔍</span>
+           </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {filteredReviews.length > 0 ? filteredReviews.map((r, i) => (
+            <ReviewCard key={i} r={r} onClick={() => setSelectedReview(r)} />
+          )) : (
+            <div className="py-20 text-center text-slate-400 italic text-sm">No signals match your criteria.</div>
+          )}
+        </div>
+      </div>
+
+      {selectedReview && (
+        <SideDrawer 
+          r={selectedReview} 
+          onClose={() => setSelectedReview(null)}
+          pmOptions={pmOptions}
+          localAssignTarget={localAssignTarget}
+          setLocalAssignTarget={setLocalAssignTarget}
+          onAssign={handleAssign}
+        />
+      )}
+
+      {toast && (
+        <div className="fixed bottom-8 right-8 bg-slate-900 text-white p-4 rounded-xl shadow-2xl animate-in slide-in-from-bottom duration-300 z-[100] border border-slate-800">
+           <p className="text-sm font-bold">{toast.message}</p>
+           <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">{toast.subtext}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ReviewCard({ r, onClick }) {
+  return (
+    <div onClick={onClick} className="p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer relative">
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-2">
+           <div className={`w-1.5 h-1.5 rounded-full ${r.sentiment === 'Positive' ? 'bg-emerald-500' : r.sentiment === 'Negative' ? 'bg-rose-500' : 'bg-amber-500'}`} />
+           <span className="text-[11px] font-bold text-slate-800">{r.user_name || 'User'}</span>
+           <span className="text-amber-500 text-[8px] tracking-widest ml-1">{'★'.repeat(r.rating)}</span>
+        </div>
+        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex gap-3">
+           <span>{r.platform}</span>
+           <span>{new Date(r.review_date).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <p className="text-[12px] text-slate-600 leading-normal line-clamp-2">{r.review_text}</p>
+      <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center gap-3">
+          {r.assigned_to && (
+            <div className="inline-flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100/50">
+                <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Owner: {r.assigned_to}</span>
+            </div>
+          )}
+          {r.jira_id && (
+            <div className="inline-flex items-center gap-1.5 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                <span className="text-[8px] font-bold text-[#0066CC] uppercase">Ticket: {r.jira_id}</span>
+            </div>
+          )}
+          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">v{r.app_version || 'N/A'}</span>
+          <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-[#0066CC] border border-blue-100 rounded-full uppercase tracking-wider">
+            #{r.category}
+          </span>
+        </div>
+        
+        <button 
+          onClick={(e) => { e.stopPropagation(); onClick(); }}
+          className="px-3 py-1 bg-slate-50 hover:bg-slate-900 hover:text-white border border-slate-200 rounded text-[9px] font-bold uppercase tracking-wider transition-all"
+        >
+          Create a Jira ticket
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function SideDrawer({ r, onClose, pmOptions, localAssignTarget, setLocalAssignTarget, onAssign }) {
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px]" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-white border-l border-slate-200 h-full p-8 animate-in slide-in-from-right duration-300 flex flex-col shadow-2xl">
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-300 hover:text-slate-900 text-lg transition-colors">✕</button>
+        <div className="flex-1 overflow-y-auto space-y-8 pr-2">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Feedback Signal</p>
+            <h2 className="text-lg font-bold text-slate-900">{r.user_name || 'User'}</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+            <DetailItem label="Platform" value={r.platform} />
+            <DetailItem label="Rating" value={`${r.rating} / 5`} />
+            <DetailItem label="Category" value={r.category} />
+            <DetailItem label="Version" value={r.app_version || 'Unknown'} />
+            <DetailItem label="Jira Ticket" value={r.jira_id || 'None'} />
+          </div>
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Content</p>
+            <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100 italic">"{r.review_text}"</p>
+          </div>
+          <div className="space-y-4 pt-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Assign Owner</p>
+            <div className="grid grid-cols-1 gap-2">
+              {pmOptions.map(pm => (
+                <button
+                  key={pm.name}
+                  onClick={() => setLocalAssignTarget(pm.name)}
+                  className={`flex justify-between items-center px-4 py-2.5 rounded-lg border transition-all ${localAssignTarget === pm.name ? 'bg-slate-50 border-slate-400' : 'bg-white border-slate-100 hover:bg-slate-50'}`}
+                >
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-900">{pm.name}</p>
+                    <p className="text-[9px] text-slate-400 uppercase font-bold">{pm.team}</p>
+                  </div>
+                  {localAssignTarget === pm.name && <span className="text-[8px] font-bold text-[#0066CC] uppercase">Selected</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="pt-8 flex gap-3 border-t border-slate-100 mt-auto">
+          <button onClick={() => onAssign(r.id, localAssignTarget)} className="btn-primary flex-1 py-2.5 text-xs font-bold" disabled={!localAssignTarget || localAssignTarget === r.assigned_to}>Create a Ticket</button>
+          <button onClick={onClose} className="btn-secondary flex-1 py-2 text-xs">Cancel</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DetailItem({ label, value }) {
+  return (
+    <div>
+      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{label}</p>
+      <p className="text-xs font-bold text-slate-700 uppercase">{value}</p>
+    </div>
+  )
+}
+
+function StatItem({ label, count, color, total }) {
+  const percent = total > 0 ? Math.round((count / total) * 100) : 0
+  return (
+    <div className="flex justify-between items-center">
+      <div>
+        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+        <p className={`text-sm font-bold ${color}`}>{count}</p>
+      </div>
+      <p className="text-[10px] font-bold text-slate-300">{percent}%</p>
+    </div>
+  )
+}
+
+export default function ReviewsPage() {
+  return (
+    <Suspense fallback={<div className="p-20 text-center text-slate-400">Loading...</div>}>
+      <ReviewsContent />
+    </Suspense>
+  )
+}

@@ -1,0 +1,66 @@
+import os
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from dotenv import load_dotenv
+
+class GoogleDocsHelper:
+    def __init__(self):
+        load_dotenv()
+        self.doc_id = os.environ.get("GOOGLE_DOC_ID")
+        self.creds_file = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        self.scopes = ['https://www.googleapis.com/auth/documents']
+
+    def sync_report(self, text: str) -> bool:
+        """
+        Clears the document and syncs the specific report text for standalone archival.
+        """
+        if not self.doc_id or not self.creds_file:
+            print("ERROR: Missing GOOGLE_DOC_ID or GOOGLE_APPLICATION_CREDENTIALS in .env")
+            return False
+
+        if not os.path.exists(self.creds_file):
+            print(f"ERROR: Credentials file not found: {self.creds_file}")
+            return False
+
+        try:
+            creds = service_account.Credentials.from_service_account_file(
+                self.creds_file, scopes=self.scopes)
+            service = build('docs', 'v1', credentials=creds)
+
+            # 1. Get document length to clear it
+            doc = service.documents().get(documentId=self.doc_id).execute()
+            content = doc.get('body').get('content')
+            end_index = content[-1].get('endIndex')
+
+            requests = []
+            
+            # 2. Clear entire document if it has content (min length is 2)
+            if end_index > 2:
+                requests.append({
+                    'deleteContentRange': {
+                        'range': {
+                            'startIndex': 1,
+                            'endIndex': end_index - 1
+                        }
+                    }
+                })
+
+            # 3. Insert standalone report text
+            requests.append({
+                'insertText': {
+                    'location': {
+                        'index': 1,
+                    },
+                    'text': text
+                }
+            })
+
+            service.documents().batchUpdate(
+                documentId=self.doc_id, body={'requests': requests}).execute()
+            
+            print(f"SUCCESS: Standalone report synced to Google Doc {self.doc_id}")
+            return True
+        except Exception as e:
+            print(f"ERROR: Google Docs update failed: {e}")
+            return False
