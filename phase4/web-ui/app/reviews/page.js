@@ -92,7 +92,7 @@ function ReviewsContent() {
     if (!pmName) return;
     try {
       // Create a local Jira ID for immediate feedback
-      const simulatedJiraId = `IND-${Math.floor(1000 + Math.random() * 9000)}`;
+      let simulatedJiraId = `IND-${Math.floor(1000 + Math.random() * 9000)}`;
       
       // Attempt real assignment
       try {
