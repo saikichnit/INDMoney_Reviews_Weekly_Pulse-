@@ -61,17 +61,24 @@ try:
 
     with col1:
         st.subheader("📊 Recent Strategic Pulses")
-        db = DatabaseManager()
         try:
+            db = DatabaseManager()
             with db._get_connection() as conn:
                 import pandas as pd
-                df = pd.read_sql_query("SELECT id, review_count, created_at FROM reports ORDER BY id DESC LIMIT 5", conn)
+                # Flexible column check to prevent 'no such column' crashes
+                try:
+                    df = pd.read_sql_query("SELECT id, review_count, created_at FROM reports ORDER BY id DESC LIMIT 5", conn)
+                except Exception:
+                    # Fallback for legacy schema
+                    df = pd.read_sql_query("SELECT id, review_count FROM reports ORDER BY id DESC LIMIT 5", conn)
+                
                 if not df.empty:
                     st.dataframe(df, use_container_width=True)
                 else:
                     st.info("No pulses generated yet. Trigger your first report from the sidebar.")
-        except Exception as db_err:
-            st.warning(f"Database initialized. Awaiting first pulse data...")
+        except Exception as e:
+            st.info("💎 Welcome! Trigger your first Strategic Pulse to initialize the intelligence hub.")
+            st.sidebar.info("System Ready for Initial Pulse")
 
     with col2:
         st.subheader("🏢 Stakeholder Archives")
