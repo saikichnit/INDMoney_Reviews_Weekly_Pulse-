@@ -140,7 +140,10 @@ function ReviewsContent() {
 
     platformFiltered.forEach(r => {
       dist[r.rating] = (dist[r.rating] || 0) + 1;
-      sent[r.sentiment] = (sent[r.sentiment] || 0) + 1;
+      // Normalize Sentiment (handle case-sensitivity)
+      const s = r.sentiment?.charAt(0).toUpperCase() + r.sentiment?.slice(1).toLowerCase();
+      if (sent.hasOwnProperty(s)) sent[s]++;
+      
       if (r.rating >= 4) promoters++;
       if (r.rating <= 2) detractors++;
     });
@@ -155,7 +158,9 @@ function ReviewsContent() {
   })();
 
   const filteredReviews = reviews.filter(r => {
-    const matchesSentiment = sentimentTab === 'All' || r.sentiment === sentimentTab;
+    // 1. Sentiment Filter (Case-Insensitive)
+    const matchesSentiment = sentimentTab === 'All' || 
+      r.sentiment?.toLowerCase() === sentimentTab.toLowerCase();
     const matchesPlatform = platform === 'all' || r.platform?.toLowerCase() === platform.toLowerCase();
     const matchesCategory = !category || r.category === category;
     

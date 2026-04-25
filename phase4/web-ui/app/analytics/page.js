@@ -29,8 +29,10 @@ export default function UnifiedIntelligencePage() {
       
       const total = timeFiltered.length || 1;
       const avgRating = (timeFiltered.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1);
-      const posCount = timeFiltered.filter(r => r.sentiment === 'Positive').length;
-      const negCount = timeFiltered.filter(r => r.sentiment === 'Negative').length;
+      
+      const posCount = timeFiltered.filter(r => r.sentiment?.toLowerCase() === 'positive').length;
+      const negCount = timeFiltered.filter(r => r.sentiment?.toLowerCase() === 'negative').length;
+      const neuCount = timeFiltered.filter(r => r.sentiment?.toLowerCase() === 'neutral').length;
 
       // Group by Category for Functional Categories
       const catMap = {};
@@ -38,7 +40,7 @@ export default function UnifiedIntelligencePage() {
         if (!catMap[r.category]) catMap[r.category] = { count: 0, rating: 0, pos: 0 };
         catMap[r.category].count++;
         catMap[r.category].rating += r.rating;
-        if (r.sentiment === 'Positive') catMap[r.category].pos++;
+        if (r.sentiment?.toLowerCase() === 'positive') catMap[r.category].pos++;
       });
 
       const transformedData = {
