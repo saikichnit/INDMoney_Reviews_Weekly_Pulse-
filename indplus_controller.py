@@ -4,19 +4,16 @@ import sys
 import traceback
 import json
 
-# Absolute Namespace Guard
+# Standard Path setup for internal modules
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 if ROOT_DIR not in sys.path:
-    sys.path.append(ROOT_DIR)
-PHASE2_DIR = os.path.join(ROOT_DIR, "phase2")
-if PHASE2_DIR not in sys.path:
-    sys.path.append(PHASE2_DIR)
+    sys.path.insert(0, ROOT_DIR)
 
 st.set_page_config(page_title="INDPlus Controller", page_icon="💎", layout="wide")
 
 try:
-    from services.intelligence_orchestrator import IntelligenceOrchestrator
-    from storage.db import DatabaseManager
+    from phase2.services.intelligence_orchestrator import IntelligenceOrchestrator
+    from phase2.storage.db import DatabaseManager
 
     st.title("💎 INDPlus Strategic Intelligence Controller")
     st.caption("Backend Management Console | Cloud Stable v2.6")
