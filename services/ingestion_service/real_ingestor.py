@@ -127,7 +127,7 @@ class RealIngestor:
             iOSAdapter("indmoney-stocks-mutual-funds", 1456108169)
         ]
 
-    def fetch_reviews(self, limit=5000):
+    def fetch_reviews(self, limit=10000):
         all_normalized = []
         
         for adapter in self.adapters:

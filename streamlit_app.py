@@ -32,7 +32,7 @@ try:
         default=["exit_load", "brokerage_fee"]
     )
     days_window = st.sidebar.slider("Rolling Window (Days)", 7, 360, 30)
-    max_reviews = st.sidebar.number_input("Max Review Capacity", 100, 5000, 300)
+    max_reviews = st.sidebar.number_input("Max Review Capacity", 100, 10000, 2000)
 
     if st.sidebar.button("🚀 TRIGGER EXECUTIVE PULSE"):
         with st.status("Initializing Strategic Synthesis...", expanded=True) as status:
