@@ -61,13 +61,16 @@ col1, col2 = st.columns([2, 1])
 with col1:
     st.subheader("📊 Recent Strategic Pulses")
     db = DatabaseManager()
-    with db._get_connection() as conn:
-        import pandas as pd
-        df = pd.read_sql_query("SELECT id, review_count, ingested_at FROM reports ORDER BY id DESC LIMIT 5", conn)
-        if not df.empty:
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.info("No pulses generated yet. Trigger your first report from the sidebar.")
+    try:
+        with db._get_connection() as conn:
+            import pandas as pd
+            df = pd.read_sql_query("SELECT id, review_count, ingested_at FROM reports ORDER BY id DESC LIMIT 5", conn)
+            if not df.empty:
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.info("No pulses generated yet. Trigger your first report from the sidebar.")
+    except Exception:
+        st.info("💎 Welcome to INDPlus! Trigger your first Strategic Pulse from the sidebar to initialize the intelligence hub.")
 
 with col2:
     st.subheader("🏢 Stakeholder Archives")
