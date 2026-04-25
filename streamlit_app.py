@@ -56,7 +56,7 @@ try:
                     db_v10 = DatabaseManager("data/pulse_v10.db")
                     with db_v10._get_connection() as conn:
                         import pandas as pd
-                        sample_reviews = pd.read_sql_query("SELECT user_name, review_text, rating, platform, review_date, category, sentiment FROM filtered_reviews LIMIT 100", conn).to_dict('records')
+                        sample_reviews = pd.read_sql_query("SELECT user_name, review_text, rating, platform, review_date, category, sentiment FROM filtered_reviews ORDER BY review_date DESC LIMIT 5000", conn).to_dict('records')
 
                     latest_data = {
                         "report_id": report_id,
