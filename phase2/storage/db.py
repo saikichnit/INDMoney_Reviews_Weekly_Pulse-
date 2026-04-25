@@ -31,7 +31,7 @@ class DatabaseManager:
                     review_text TEXT,
                     review_date TEXT,
                     content_hash TEXT UNIQUE,
-                    ingested_at TEXT
+                    created_at TEXT
                 )
             ''')
             # Filtered Reviews
@@ -66,7 +66,7 @@ class DatabaseManager:
                     email_body TEXT,
                     json_path TEXT,
                     pdf_path TEXT,
-                    created_at TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     review_count INTEGER
                 )
             ''')
@@ -78,7 +78,7 @@ class DatabaseManager:
             for r in reviews:
                 try:
                     cursor.execute('''
-                        INSERT OR IGNORE INTO raw_reviews (platform, rating, review_text, review_date, content_hash, ingested_at)
+                        INSERT OR IGNORE INTO raw_reviews (platform, rating, review_text, review_date, content_hash, created_at)
                         VALUES (?, ?, ?, ?, ?, ?)
                     ''', (r.get('platform'), r.get('rating'), r['review_text'], r.get('date'), r.get('hash'), datetime.now().isoformat()))
                 except:
