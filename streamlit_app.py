@@ -40,6 +40,15 @@ try:
             st.write("🔍 Layer 1-3: Ingesting & Deduplicating Reviews...")
             orchestrator = IntelligenceOrchestrator(db_path="data/pulse_v10.db")
             
+            # Force a fresh ingestion if we have fewer than 10 reviews (ensures real data exists)
+            st.write("📡 Checking Live Signal Strength...")
+            db_v10 = DatabaseManager("data/pulse_v10.db")
+            with db_v10._get_connection() as conn:
+                count = conn.execute("SELECT COUNT(*) FROM raw_reviews").fetchone()[0]
+                if count < 10:
+                    st.write("📥 Database is hungry. Ingesting fresh App Store/Play Store signals...")
+                    orchestrator.adapter.ingest_all(limit=1000)
+            
             st.write("🧠 Layer 4-5: LLM Theme Extraction & Synthesis...")
             report_id, combined_payload = orchestrator.run_pipeline(
                 fee_types=",".join(fee_options),
