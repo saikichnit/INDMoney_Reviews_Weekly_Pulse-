@@ -47,9 +47,9 @@ try:
                 count = conn.execute("SELECT COUNT(*) FROM raw_reviews").fetchone()[0]
                 if count < 10:
                     st.write("📥 Database is hungry. Ingesting fresh App Store/Play Store signals...")
-                    from services.review_adapter import ReviewAdapter
-                    adapter = ReviewAdapter(db_path="data/pulse_v10.db")
-                    adapter.ingest_all(limit=1000)
+                    from services.ingestion_service.real_ingestor import RealIngestor
+                    ingestor = RealIngestor(db_v10)
+                    ingestor.fetch_reviews(limit=1000)
             
             st.write("🧠 Layer 4-5: LLM Theme Extraction & Synthesis...")
             report_id, combined_payload = orchestrator.run_pipeline(
