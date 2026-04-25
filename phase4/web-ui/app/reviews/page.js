@@ -36,8 +36,8 @@ function ReviewsContent() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      // Primary: Fetch from Live Bridge (GitHub)
-      const GITHUB_JSON_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/stable/data/latest_pulse.json";
+      // Primary: Fetch from Live Bridge (GitHub) with Cache-Buster
+      const GITHUB_JSON_URL = `https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/stable/data/latest_pulse.json?t=${new Date().getTime()}`;
       const res = await fetch(GITHUB_JSON_URL);
       const json = await res.json();
       
@@ -289,6 +289,10 @@ function ReviewsContent() {
 
       {/* 4. REVIEWS LIST */}
       <div className="space-y-6" id="review-feed">
+        <div className="flex items-center gap-2 px-1 mb-2">
+           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Intelligence Active: Analyzing {filteredReviews.length} feedback signals for this view</span>
+        </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4 gap-6">
            <div className="flex gap-6">
               {['All', 'Positive', 'Neutral', 'Negative'].map(tab => (

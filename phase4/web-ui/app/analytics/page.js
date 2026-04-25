@@ -11,8 +11,8 @@ export default function UnifiedIntelligencePage() {
   const fetchIntelligence = async () => {
     setLoading(true)
     try {
-      // Primary: Fetch from Live Bridge (GitHub) for instant population
-      const GITHUB_JSON_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/stable/data/latest_pulse.json";
+      // Primary: Fetch from Live Bridge (GitHub) with Cache-Buster
+      const GITHUB_JSON_URL = `https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/stable/data/latest_pulse.json?t=${new Date().getTime()}`;
       const res = await fetch(GITHUB_JSON_URL);
       const json = await res.json();
       
@@ -121,6 +121,11 @@ export default function UnifiedIntelligencePage() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 px-1">
+         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Intelligence Active: Analyzing {data?.summary?.total_reviews} signals for this period</span>
       </div>
 
       {/* 2. CORE KPI STRIP */}
