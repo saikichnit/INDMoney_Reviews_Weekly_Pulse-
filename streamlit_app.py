@@ -100,6 +100,8 @@ try:
                             st.sidebar.warning(f"📡 Sync Error: {sync_res.status_code}")
                     else:
                         st.sidebar.info("💡 Add GITHUB_TOKEN to Streamlit Secrets for Live Sync")
+                except Exception as sync_err:
+                    st.sidebar.warning(f"📡 Sync Delayed: {sync_err}")
 
                 status.update(label=f"✅ Pulse Generated! Report ID: {report_id}", state="complete")
                 st.balloons()
