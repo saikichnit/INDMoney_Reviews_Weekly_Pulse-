@@ -1,6 +1,8 @@
-import sys
 import os
-sys.path.append(os.path.join(os.getcwd(), 'phase2'))
+import sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 from services.fee_explainer_service.service import FeeExplainerService
 import unittest

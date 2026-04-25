@@ -6,22 +6,20 @@ import json
 
 # Standard Path setup
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-PHASE2_DIR = os.path.join(ROOT_DIR, "phase2")
 
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
-if PHASE2_DIR not in sys.path:
-    sys.path.insert(0, PHASE2_DIR)
 
 st.set_page_config(page_title="INDPlus Controller", page_icon="💎", layout="wide")
 
 st.title("💎 INDPlus Strategic Intelligence Controller")
-st.caption("Backend Management Console | Diagnostic Boot v3.0")
+st.caption("Backend Management Console | Root Deployment v4.0")
 
 # Diagnostic Import Area
 try:
-    from phase2.services.intelligence_orchestrator import IntelligenceOrchestrator
-    from phase2.storage.db import DatabaseManager
+    # Use Root Imports (Services and Storage are in root)
+    from services.intelligence_orchestrator import IntelligenceOrchestrator
+    from storage.db import DatabaseManager
     
     # If we get here, the system is healthy
     st.sidebar.success("✅ System Core Loaded")
@@ -69,8 +67,11 @@ try:
                 try:
                     df = pd.read_sql_query("SELECT id, review_count, created_at FROM reports ORDER BY id DESC LIMIT 5", conn)
                 except Exception:
-                    # Fallback for legacy schema
-                    df = pd.read_sql_query("SELECT id, review_count FROM reports ORDER BY id DESC LIMIT 5", conn)
+                    # Fallback for legacy schema or slightly different naming
+                    try:
+                        df = pd.read_sql_query("SELECT id, review_count, ingested_at FROM reports ORDER BY id DESC LIMIT 5", conn)
+                    except Exception:
+                        df = pd.read_sql_query("SELECT id, review_count FROM reports ORDER BY id DESC LIMIT 5", conn)
                 
                 if not df.empty:
                     st.dataframe(df, use_container_width=True)
@@ -89,4 +90,4 @@ except Exception as e:
     st.info("The Safe Bootloader caught a crash during module initialization. See details below:")
     st.code(traceback.format_exc())
     
-    st.warning("ENGINEER NOTE: This usually indicates a missing dependency or a pathing collision in the cloud environment.")
+    st.warning("ENGINEER NOTE: This indicates a deployment misalignment. Ensure 'services/' and 'storage/' are in the root directory.")
