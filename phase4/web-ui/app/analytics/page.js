@@ -16,27 +16,47 @@ export default function UnifiedIntelligencePage() {
       const res = await fetch(GITHUB_JSON_URL);
       const json = await res.json();
       
-      // Transform GitHub Bridge format to Dashboard format
-      const payload = json.payload || {};
+      // 1. Transform & Filter Data Locally for full reactivity
+      const allReviews = json.reviews || [];
+      const days = parseInt(timeRange) || 30;
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+
+      const timeFiltered = allReviews.filter(r => !r.review_date || new Date(r.review_date) >= cutoffDate);
+      
+      const total = timeFiltered.length || 1;
+      const avgRating = (timeFiltered.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1);
+      const posCount = timeFiltered.filter(r => r.sentiment === 'Positive').length;
+      const negCount = timeFiltered.filter(r => r.sentiment === 'Negative').length;
+
+      // Group by Category for Functional Categories
+      const catMap = {};
+      timeFiltered.forEach(r => {
+        if (!catMap[r.category]) catMap[r.category] = { count: 0, rating: 0, pos: 0 };
+        catMap[r.category].count++;
+        catMap[r.category].rating += r.rating;
+        if (r.sentiment === 'Positive') catMap[r.category].pos++;
+      });
+
       const transformedData = {
         summary: {
-          total_reviews: payload.review_count || 0,
-          avg_rating: payload.avg_rating || 4.2, 
+          total_reviews: timeFiltered.length,
+          avg_rating: avgRating,
           sentiment: {
-            pos_p: payload.sentiment?.pos_p || 75,
-            neg_p: payload.sentiment?.neg_p || 12
+            pos_p: Math.round((posCount / total) * 100),
+            neg_p: Math.round((negCount / total) * 100)
           }
         },
         nps: {
-          promoters: Math.round((payload.review_count || 0) * 0.7),
-          detractors: Math.round((payload.review_count || 0) * 0.1)
+          promoters: posCount,
+          detractors: negCount
         },
-        categories: (payload.themes || []).map(t => ({
-          name: t.name,
-          count: Math.round((t.percentage / 100) * (payload.review_count || 0)),
-          avg_rating: t.avg_rating || 4.0,
-          pos_p: t.percentage || 0,
-          health: t.percentage > 40 ? 'Good' : 'Needs Attention'
+        categories: Object.keys(catMap).map(name => ({
+          name,
+          count: catMap[name].count,
+          avg_rating: (catMap[name].rating / catMap[name].count).toFixed(1),
+          pos_p: Math.round((catMap[name].pos / catMap[name].count) * 100),
+          health: (catMap[name].pos / catMap[name].count) > 0.6 ? 'Good' : 'Needs Attention'
         }))
       };
       
