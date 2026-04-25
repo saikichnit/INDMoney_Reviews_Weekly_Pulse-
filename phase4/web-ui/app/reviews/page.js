@@ -303,16 +303,24 @@ function ReviewsContent() {
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4 gap-6">
            <div className="flex gap-6">
-              {['All', 'Positive', 'Neutral', 'Negative'].map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setSentimentTab(tab)}
-                  className={`text-[10px] font-bold uppercase tracking-wider transition-all relative pb-4 ${sentimentTab === tab ? 'text-[#0066CC]' : 'text-slate-400 hover:text-slate-700'}`}
-                >
-                  {tab}
-                  {sentimentTab === tab && <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#0066CC] rounded-full" />}
-                </button>
-              ))}
+              {['All', 'Positive', 'Neutral', 'Negative'].map(tab => {
+                const count = tab === 'All' ? reactiveMetrics.total_reviews : (reactiveMetrics.sentiment_split[tab] || 0);
+                const colorClass = tab === 'Positive' ? 'text-emerald-600' : tab === 'Negative' ? 'text-rose-600' : tab === 'Neutral' ? 'text-amber-600' : 'text-[#0066CC]';
+                
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setSentimentTab(tab)}
+                    className={`text-[10px] font-bold uppercase tracking-wider transition-all relative pb-4 flex items-center gap-1.5 ${sentimentTab === tab ? colorClass : 'text-slate-400 hover:text-slate-700'}`}
+                  >
+                    {tab}
+                    <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${sentimentTab === tab ? 'bg-slate-100' : 'bg-slate-50'}`}>
+                      {count.toLocaleString()}
+                    </span>
+                    {sentimentTab === tab && <div className={`absolute bottom-0 left-0 right-0 h-[1.5px] rounded-full ${tab === 'All' ? 'bg-[#0066CC]' : tab === 'Positive' ? 'bg-emerald-500' : tab === 'Negative' ? 'bg-rose-500' : 'bg-amber-500'}`} />}
+                  </button>
+                )
+              })}
            </div>
 
            <div className="relative flex-1 max-w-md">
