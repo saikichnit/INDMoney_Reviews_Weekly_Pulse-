@@ -15,17 +15,24 @@ class GoogleDocsHelper:
         """
         Clears the document and syncs the specific report text for standalone archival.
         """
-        if not self.doc_id or not self.creds_file:
-            print("ERROR: Missing GOOGLE_DOC_ID or GOOGLE_APPLICATION_CREDENTIALS in .env")
-            return False
-
-        if not os.path.exists(self.creds_file):
-            print(f"ERROR: Credentials file not found: {self.creds_file}")
-            return False
-
         try:
-            creds = service_account.Credentials.from_service_account_file(
-                self.creds_file, scopes=self.scopes)
+            # Try loading from Streamlit Secrets first (Production/Cloud)
+            try:
+                import streamlit as st
+                if "GCP_SERVICE_ACCOUNT" in st.secrets:
+                    creds_dict = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+                    creds = service_account.Credentials.from_service_account_info(
+                        creds_dict, scopes=self.scopes)
+                else:
+                    raise ImportError
+            except (ImportError, KeyError, Exception):
+                # Fallback to local file (Development)
+                if not os.path.exists(self.creds_file):
+                    print(f"ERROR: Credentials file not found: {self.creds_file}")
+                    return False
+                creds = service_account.Credentials.from_service_account_file(
+                    self.creds_file, scopes=self.scopes)
+            
             service = build('docs', 'v1', credentials=creds)
 
             # 1. Get document length to clear it
