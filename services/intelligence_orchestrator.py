@@ -48,7 +48,7 @@ class IntelligenceOrchestrator:
             raw_data = self.ingestor.fetch_from_local("data/raw", limit=max_reviews, days=days)
 
         if not raw_data:
-            return None
+            return None, None
 
         # 2-4. Core Synthesis
         filtered_data = self.preprocessor.process(raw_data)
@@ -65,7 +65,7 @@ class IntelligenceOrchestrator:
         # Build Payload
         combined_payload = {
             "summary": note_data.get("summary", "No summary available."),
-            "themes": themes_data.get("theme_analysis", []),
+            "themes": themes_data.get("themes", []),
             "quotes": note_data.get("quotes", []),
             "action_ideas": note_data.get("action_items", []),
             "fee_scenarios": fee_scenarios,
@@ -77,4 +77,4 @@ class IntelligenceOrchestrator:
         self.pdf_service.generate_report_pdf(combined_payload, combined_payload['themes'], combined_payload['fee_scenarios'])
         self.mcp_client.append_to_google_docs(combined_payload)
         
-        return report_id
+        return report_id, combined_payload
