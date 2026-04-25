@@ -100,17 +100,18 @@ try:
                         payload = {
                             "message": "System: Live Bridge Sync",
                             "content": content_b64,
-                            "branch": "stable"
+                            "branch": "main"
                         }
                         if sha: payload["sha"] = sha
                         
                         sync_res = requests.put(url, headers=headers, json=payload)
                         if sync_res.status_code in [200, 201]:
-                            st.sidebar.success("📡 Live Bridge: Synchronized")
+                            st.sidebar.success("📡 Live Bridge: Synchronized to Main")
                         else:
-                            st.sidebar.warning(f"📡 Sync Error: {sync_res.status_code}")
+                            st.sidebar.error(f"📡 Sync Failed: {sync_res.status_code}")
+                            st.sidebar.json(sync_res.json())
                     else:
-                        st.sidebar.info("💡 Add GITHUB_TOKEN to Streamlit Secrets for Live Sync")
+                        st.sidebar.warning("💡 Missing GITHUB_TOKEN in Secrets")
                 except Exception as sync_err:
                     st.sidebar.warning(f"📡 Sync Delayed: {sync_err}")
 

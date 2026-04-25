@@ -16,7 +16,7 @@ export default function UnifiedIntelligencePage() {
     setLoading(true)
     try {
       // Primary: Fetch from GitHub API (Instant Sync, No Cache)
-      const GITHUB_API_URL = "https://api.github.com/repos/saikichnit/INDMoney_Reviews_Weekly_Pulse-/contents/data/latest_pulse.json?ref=stable";
+      const GITHUB_API_URL = "https://api.github.com/repos/saikichnit/INDMoney_Reviews_Weekly_Pulse-/contents/data/latest_pulse.json?ref=main";
       const res = await fetch(GITHUB_API_URL, {
         headers: { "Accept": "application/vnd.github.v3.raw" },
         cache: 'no-store'
