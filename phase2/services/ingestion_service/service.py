@@ -13,6 +13,8 @@ class IngestionService:
 
     def fetch_from_local(self, folder_path: str, limit: int = None, days: int = 60) -> List[Dict]:
         max_limit = limit if limit is not None else self.max_reviews
+        if not os.path.exists(folder_path):
+            return []
         files = [f for f in os.listdir(folder_path) if f.endswith(('.csv', '.json'))]
         all_reviews = []
         
