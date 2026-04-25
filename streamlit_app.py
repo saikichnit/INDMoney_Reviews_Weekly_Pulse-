@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 import json
+from datetime import datetime
 
 # Standard Path setup
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -40,7 +41,7 @@ try:
             orchestrator = IntelligenceOrchestrator(db_path="data/pulse_v10.db")
             
             st.write("🧠 Layer 4-5: LLM Theme Extraction & Synthesis...")
-            report_id = orchestrator.run_pipeline(
+            report_id, combined_payload = orchestrator.run_pipeline(
                 fee_types=",".join(fee_options),
                 max_reviews=max_reviews,
                 days=days_window
