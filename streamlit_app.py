@@ -52,10 +52,17 @@ try:
                 
                 # [NEW] Live Bridge: Save for Frontend and Auto-Push
                 try:
+                    # Get a sample of filtered reviews for the frontend
+                    db_v10 = DatabaseManager("data/pulse_v10.db")
+                    with db_v10._get_connection() as conn:
+                        import pandas as pd
+                        sample_reviews = pd.read_sql_query("SELECT user_name, review_text, rating, platform, review_date, category, sentiment FROM filtered_reviews LIMIT 100", conn).to_dict('records')
+
                     latest_data = {
                         "report_id": report_id,
                         "generated_at": datetime.now().isoformat(),
-                        "payload": combined_payload
+                        "payload": combined_payload,
+                        "reviews": sample_reviews
                     }
                     os.makedirs("data", exist_ok=True)
                     with open("data/latest_pulse.json", "w") as f:
