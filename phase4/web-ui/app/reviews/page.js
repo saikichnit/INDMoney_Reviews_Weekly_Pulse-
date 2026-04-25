@@ -36,9 +36,12 @@ function ReviewsContent() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      // Primary: Fetch from Live Bridge (GitHub) with Cache-Buster
-      const GITHUB_JSON_URL = `https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/stable/data/latest_pulse.json?t=${new Date().getTime()}`;
-      const res = await fetch(GITHUB_JSON_URL);
+      // Primary: Fetch from GitHub API (Instant Sync, No Cache)
+      const GITHUB_API_URL = "https://api.github.com/repos/saikichnit/INDMoney_Reviews_Weekly_Pulse-/contents/data/latest_pulse.json?ref=stable";
+      const res = await fetch(GITHUB_API_URL, {
+        headers: { "Accept": "application/vnd.github.v3.raw" },
+        cache: 'no-store'
+      });
       const json = await res.json();
       
       // Transform GitHub Bridge format to Dashboard format
