@@ -4,7 +4,7 @@ import sys
 import traceback
 import json
 
-# Standard Path setup for internal modules
+# Standard Path setup
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 PHASE2_DIR = os.path.join(ROOT_DIR, "phase2")
 
@@ -15,13 +15,17 @@ if PHASE2_DIR not in sys.path:
 
 st.set_page_config(page_title="INDPlus Controller", page_icon="💎", layout="wide")
 
+st.title("💎 INDPlus Strategic Intelligence Controller")
+st.caption("Backend Management Console | Diagnostic Boot v3.0")
+
+# Diagnostic Import Area
 try:
     from phase2.services.intelligence_orchestrator import IntelligenceOrchestrator
     from phase2.storage.db import DatabaseManager
-
-    st.title("💎 INDPlus Strategic Intelligence Controller")
-    st.caption("Backend Management Console | Cloud Stable v2.6")
-
+    
+    # If we get here, the system is healthy
+    st.sidebar.success("✅ System Core Loaded")
+    
     # Sidebar Configuration
     st.sidebar.header("🕹️ Control Panel")
     fee_options = st.sidebar.multiselect(
@@ -66,14 +70,16 @@ try:
                     st.dataframe(df, use_container_width=True)
                 else:
                     st.info("No pulses generated yet. Trigger your first report from the sidebar.")
-        except Exception:
-            st.info("💎 Welcome! Trigger your first Strategic Pulse to initialize the intelligence hub.")
+        except Exception as db_err:
+            st.warning(f"Database initialized. Awaiting first pulse data...")
 
     with col2:
         st.subheader("🏢 Stakeholder Archives")
         st.info("Live Strategic Doc sync is active. Updates will appear in your Google Doc after each pulse.")
 
 except Exception as e:
-    st.error("🚨 CRITICAL SYSTEM ERROR DETECTED")
-    st.write("Please share the traceback below with the engineer:")
+    st.error("🚨 CRITICAL BOOT ERROR DETECTED")
+    st.info("The Safe Bootloader caught a crash during module initialization. See details below:")
     st.code(traceback.format_exc())
+    
+    st.warning("ENGINEER NOTE: This usually indicates a missing dependency or a pathing collision in the cloud environment.")
