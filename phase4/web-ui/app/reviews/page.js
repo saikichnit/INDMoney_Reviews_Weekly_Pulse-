@@ -190,10 +190,14 @@ function ReviewsContent() {
              <div className="flex items-center gap-2">
                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Direct feedback pulse across all platforms</span>
              </div>
-             <div className="flex items-center gap-2">
-               <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">📡 Pulse Generated: {pulseDate ? new Date(pulseDate).toLocaleString() : 'Live Snapshot'}</span>
-               <a href="https://share.streamlit.io/" target="_blank" className="text-[9px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest border-l border-slate-200 pl-2 underline decoration-slate-200 underline-offset-2">Refresh Data in Controller ↗</a>
-            </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">📡 Pulse Generated: {pulseDate ? new Date(pulseDate).toLocaleString() : 'Live Snapshot'}</span>
+                <a href="https://share.streamlit.io/" target="_blank" className="text-[9px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest border-l border-slate-200 pl-2 underline decoration-slate-200 underline-offset-2">Refresh Data in Controller ↗</a>
+                <div className="flex items-center gap-1.5 border-l border-slate-200 pl-2">
+                   <div className={`w-1.5 h-1.5 rounded-full ${reviews.length > 3 ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{reviews.length > 3 ? 'Connected' : 'Sync Required'}</span>
+                </div>
+             </div>
           </div>
           {category && (
             <div className="mt-3 flex items-center gap-2">
