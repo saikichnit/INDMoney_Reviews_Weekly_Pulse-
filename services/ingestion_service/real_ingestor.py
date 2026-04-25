@@ -119,18 +119,19 @@ class iOSAdapter(BaseAdapter):
             })
         return normalized
 
-class RealIngestionService:
-    def __init__(self):
+class RealIngestor:
+    def __init__(self, db_manager=None):
+        self.db = db_manager
         self.adapters = [
             AndroidAdapter("in.indwealth"),
             iOSAdapter("indmoney-stocks-mutual-funds", 1456108169)
         ]
 
-    def ingest_all(self, limit_per_platform=5000):
+    def fetch_reviews(self, limit=5000):
         all_normalized = []
         
         for adapter in self.adapters:
-            raw = adapter.fetch(limit_per_platform)
+            raw = adapter.fetch(limit)
             normalized = adapter.normalize(raw)
             all_normalized.extend(normalized)
         
@@ -139,8 +140,14 @@ class RealIngestionService:
         filtered = []
         for r in all_normalized:
             try:
-                r_date = datetime.fromisoformat(r['date']).replace(tzinfo=None)
-                if r_date > fifty_two_weeks_ago:
+                # Handle potential datetime objects or strings
+                r_date = r['date']
+                if isinstance(r_date, str):
+                    r_dt = datetime.fromisoformat(r_date.replace('Z', '+00:00'))
+                else:
+                    r_dt = r_date
+                
+                if r_dt.replace(tzinfo=None) > fifty_two_weeks_ago:
                     filtered.append(r)
             except Exception as e:
                 logger.warning(f"Date parsing failed for review: {e}")
@@ -153,4 +160,4 @@ class RealIngestionService:
                 cleaned.append(r)
             
         logger.info(f"Ingestion Complete: {len(cleaned)} total reviews ready for storage")
-        return cleaned[:10000]
+        return cleaned[:limit]
