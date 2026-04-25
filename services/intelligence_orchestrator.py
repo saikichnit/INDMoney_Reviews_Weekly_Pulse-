@@ -73,7 +73,7 @@ class IntelligenceOrchestrator:
         }
 
         # 6. Cross-Platform Delivery
-        report_id = self.db.save_report(combined_payload)
+        report_id = self.db.save_report(combined_payload, combined_payload['review_count'])
         self.pdf_service.generate_elite_pdf(combined_payload, report_id)
         self.mcp_client.sync_report(combined_payload)
         
