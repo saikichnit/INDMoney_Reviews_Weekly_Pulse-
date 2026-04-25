@@ -6,8 +6,12 @@ import json
 
 # Standard Path setup for internal modules
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+PHASE2_DIR = os.path.join(ROOT_DIR, "phase2")
+
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
+if PHASE2_DIR not in sys.path:
+    sys.path.insert(0, PHASE2_DIR)
 
 st.set_page_config(page_title="INDPlus Controller", page_icon="💎", layout="wide")
 
