@@ -60,7 +60,7 @@ try:
         try:
             with db._get_connection() as conn:
                 import pandas as pd
-                df = pd.read_sql_query("SELECT id, review_count, ingested_at FROM reports ORDER BY id DESC LIMIT 5", conn)
+                df = pd.read_sql_query("SELECT id, review_count, created_at FROM reports ORDER BY id DESC LIMIT 5", conn)
                 if not df.empty:
                     st.dataframe(df, use_container_width=True)
                 else:
