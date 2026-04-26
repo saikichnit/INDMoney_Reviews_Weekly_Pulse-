@@ -31,14 +31,15 @@ export async function POST(request) {
       if (Array.isArray(reports) && reports.length > 0) {
         const latest = reports[0];
         const createdAt = new Date(latest.created_at);
-        const ageInMinutes = (new Date() - createdAt) / 60000;
+        const ageInHours = (new Date() - createdAt) / 3600000;
         
-        // If we have a report for this window that is less than 60 mins old, return it INSTANTLY
-        if (ageInMinutes < 60) {
+        // If we have a report from the last 12 hours, return it INSTANTLY
+        // This solves the "80 seconds" wait by using pre-analyzed proactive data.
+        if (ageInHours < 12) {
           return NextResponse.json({ 
             report_id: latest.id, 
             status: "success", 
-            message: "Retrieved fresh report from intelligence cache." 
+            message: "Instant pulse retrieved from intelligence cache." 
           });
         }
       }

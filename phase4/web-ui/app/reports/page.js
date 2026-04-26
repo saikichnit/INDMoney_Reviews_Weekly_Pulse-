@@ -12,6 +12,25 @@ export default function ReportsAndAutomation() {
   const [isPolling, setIsPolling] = useState(false)
   const [pollCount, setPollCount] = useState(0)
   const [startTime, setStartTime] = useState(null)
+  const [recipientEmail, setRecipientEmail] = useState('stakeholders@indmoney.com')
+  const [sending, setSending] = useState(false)
+
+  const handleApprove = async (reportId, mode) => {
+    setSending(true)
+    try {
+      const res = await fetch(`/api/reports/${reportId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: recipientEmail, mode })
+      })
+      if (res.ok) alert("Email sent successfully!")
+      else alert("Failed to send email")
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSending(false)
+    }
+  }
 
   useEffect(() => {
     fetchReports()
@@ -302,12 +321,33 @@ export default function ReportsAndAutomation() {
                         {report.review_count} SIGNALS
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(typeof report.themes === 'string' ? JSON.parse(report.themes) : report.themes).slice(0, 2).map((t, i) => (
-                        <span key={i} className="text-[10px] font-bold text-slate-500 uppercase px-2 py-1 bg-gray-100 rounded border border-gray-200">
-                          {typeof t === 'string' ? t : t.name}
-                        </span>
-                      ))}
+                    <div className="flex flex-col space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {(typeof report.themes === 'string' ? JSON.parse(report.themes) : report.themes).slice(0, 2).map((t, i) => (
+                          <span key={i} className="text-[10px] font-bold text-slate-500 uppercase px-2 py-1 bg-gray-100 rounded border border-gray-200">
+                            {typeof t === 'string' ? t : t.name}
+                          </span>
+                        ))}
+                      </div>
+                      {/* Email Field for Latest Report */}
+                      {report.id === reports[0].id && (
+                        <div className="flex items-center space-x-2">
+                          <input 
+                            type="email" 
+                            className="text-[10px] bg-white border border-gray-200 rounded px-2 py-1 w-40 focus:border-blue-300 outline-none"
+                            placeholder="recipient@indmoney.com"
+                            onClick={(e) => e.stopPropagation()}
+                            value={recipientEmail}
+                            onChange={(e) => setRecipientEmail(e.target.value)}
+                          />
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleApprove(report.id, 'email'); }}
+                            className="bg-emerald-500 text-white text-[9px] font-black px-2 py-1 rounded hover:bg-emerald-600 transition-colors"
+                          >
+                            SEND
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
                       <Link href={`/report/${report.id}`} className="text-[10px] font-black text-[#0066CC] uppercase tracking-widest hover:underline flex items-center justify-end space-x-1">
