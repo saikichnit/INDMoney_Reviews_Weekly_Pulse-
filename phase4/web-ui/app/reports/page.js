@@ -45,8 +45,11 @@ export default function ReportsAndAutomation() {
       // Use the internal Next.js API bridge instead of the separate 8001 server
       const res = await fetch(`/api/generate-report?days=${days}`, { method: 'POST' })
       const data = await res.json()
+      
       if (data.report_id) {
         router.push(`/report/${data.report_id}`)
+      } else if (data.status === "started") {
+        alert(data.message || "Generation started in the cloud. Please refresh in 2 minutes.")
       } else {
         alert("Generation failed: " + (data.error || "Unknown error"))
       }
