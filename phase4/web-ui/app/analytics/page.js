@@ -24,12 +24,26 @@ export default function UnifiedIntelligencePage() {
       const json = await res.json();
       
       // 1. Transform & Filter Data Locally for full reactivity
-      const allReviews = json.reviews || [];
+      const reviews = json.reviews || [];
       const days = parseInt(timeRange) || 30;
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
 
-      const timeFiltered = allReviews.filter(r => !r.review_date || new Date(r.review_date) >= cutoffDate);
+      const parseDate = (d) => {
+        if (!d) return new Date();
+        const parts = d.split('/');
+        if (parts.length === 3) {
+           const dd = new Date(parts[2], parts[0] - 1, parts[1]);
+           if (!isNaN(dd.getTime())) return dd;
+        }
+        const dd = new Date(d);
+        return isNaN(dd.getTime()) ? new Date() : dd;
+      };
+
+      const timeFiltered = reviews.filter(r => {
+        if (!r.review_date) return true;
+        return parseDate(r.review_date) >= cutoffDate;
+      });
       
       const total = timeFiltered.length || 1;
       const avgRating = (timeFiltered.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1);

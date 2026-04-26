@@ -134,16 +134,19 @@ function ReviewsContent() {
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     const parseDate = (d) => {
-      if (!d) return new Date(0);
+      if (!d) return new Date(); // Safety Net: Treat missing dates as 'Just Now'
       const parts = d.split('/');
       if (parts.length === 3) {
-         // Handle MM/DD/YYYY or DD/MM/YYYY
-         return new Date(parts[2], parts[0] - 1, parts[1]);
+         // Try to handle MM/DD/YYYY
+         const dd = new Date(parts[2], parts[0] - 1, parts[1]);
+         if (!isNaN(dd.getTime())) return dd;
       }
-      return new Date(d);
+      const dd = new Date(d);
+      return isNaN(dd.getTime()) ? new Date() : dd;
     };
 
     const timeFiltered = reviews.filter(r => {
+      if (!r.review_date) return true; // Show reviews with missing dates by default
       const rd = parseDate(r.review_date);
       return rd >= cutoffDate;
     });
