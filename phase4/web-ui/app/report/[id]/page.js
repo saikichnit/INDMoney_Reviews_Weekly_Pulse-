@@ -12,6 +12,14 @@ export default function ReportPreview() {
   const [success, setSuccess] = useState(false)
   const [recipientEmail, setRecipientEmail] = useState('stakeholders@indmoney.com')
   const [editedSummary, setEditedSummary] = useState('')
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    if (searchParams.get('status') === 'updating') {
+      setIsUpdating(true)
+    }
+  }, [])
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -104,7 +112,23 @@ export default function ReportPreview() {
   return (
     <div className="max-w-7xl mx-auto py-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* 1. Header with Breadcrumbs */}
+      {/* Live Refresh Banner */}
+      {isUpdating && (
+        <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between animate-pulse">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 bg-blue-100 text-[#0066CC] rounded-full flex items-center justify-center animate-spin">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+             </div>
+             <div>
+                <p className="text-sm font-bold text-[#0066CC]">Generating Fresh Pulse...</p>
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Waking up cloud container for real-time signal refresh</p>
+             </div>
+          </div>
+          <span className="text-[10px] font-black text-[#0066CC] px-3 py-1 bg-white rounded-full border border-blue-100 shadow-sm">EST. 80S</span>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-blue-50 text-[#0066CC] rounded-xl flex items-center justify-center shadow-sm">

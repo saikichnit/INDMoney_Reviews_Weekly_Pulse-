@@ -106,6 +106,12 @@ export default function ReportsAndAutomation() {
   }
 
   const handleGenerate = async () => {
+    // 1. OPTIMISTIC REDIRECT: To achieve the 5-10 second goal, we instantly open the latest report
+    // while the cloud worker refreshes the signals in the background.
+    if (reports.length > 0) {
+      router.push(`/report/${reports[0].id}?status=updating`)
+    }
+
     setGenerating(true)
     const days = selectedMonths * 30
     const clickTime = Date.now()
