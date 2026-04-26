@@ -71,7 +71,10 @@ function ReviewsContent() {
         }))
       };
       
-      setReviews(json.reviews || []);
+      const fetchedReviews = json.reviews || [];
+      const reviewsWithIds = fetchedReviews.map((r, i) => ({ id: r.id || `local-${Date.now()}-${i}`, ...r }));
+      setReviews(reviewsWithIds);
+      
       setMetrics({
         total_reviews: transformedData.summary.total_reviews,
         avg_rating: transformedData.summary.avg_rating,
@@ -97,18 +100,15 @@ function ReviewsContent() {
   const handleAssign = async (reviewId, pmName) => {
     if (!pmName) return;
     try {
-      // Create a local Jira ID for immediate feedback
       let simulatedJiraId = `IND-${Math.floor(1000 + Math.random() * 9000)}`;
       
-      // Attempt real assignment
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reviews/${reviewId}/assign`, {
+        const res = await fetch(`/api/reviews/${reviewId}/assign`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ assigned_to: pmName })
         });
         const result = await res.json();
-        // Use real ID if available
         if (result.jira_id) simulatedJiraId = result.jira_id;
       } catch (e) {
         console.log("Local assignment mode active");
@@ -117,7 +117,7 @@ function ReviewsContent() {
       setToast({ message: `Assigned to ${pmName}`, subtext: `Ticket Created: ${simulatedJiraId}` })
       setTimeout(() => setToast(null), 3000)
       
-      setReviews(prev => prev.map(r => r.id === reviewId || r.user_name === reviewId ? { ...r, assigned_to: pmName, jira_id: simulatedJiraId } : r))
+      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, assigned_to: pmName, jira_id: simulatedJiraId } : r))
       
       // AUTO-CLOSE
       setSelectedReview(null)
