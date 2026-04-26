@@ -27,6 +27,8 @@ class IntelligenceOrchestrator:
         os.makedirs(os.path.dirname(abs_db_path), exist_ok=True)
         
         self.db = DatabaseManager(abs_db_path)
+        self.db.init_db() # Ensure tables exist in fresh cloud environments
+        
         self.ingestor = IngestionService(self.db)
         self.preprocessor = PreprocessingService(self.db)
         self.discoverer = DiscoveryService()
@@ -57,8 +59,7 @@ class IntelligenceOrchestrator:
 
         if needs_ingest:
             print("📡 Cache Miss: Starting Live Signal Ingestion...")
-            real_ingestor = RealIngestor(self.db)
-            raw_data = real_ingestor.fetch_reviews(limit=max_reviews)
+            raw_data = self.ingestor.fetch_reviews(limit=max_reviews)
             self.db.save_raw_reviews(raw_data)
         
         # Fetch current data from DB for analysis
