@@ -28,7 +28,9 @@ export default function ReportsAndAutomation() {
   }, [isPolling])
 
   useEffect(() => {
+    // If we were polling and a new report appeared, stop polling
     if (isPolling && reports.length > 0) {
+      // Check if the latest report is new (less than 3 mins old)
       const latest = reports[0]
       const createdAt = new Date(latest.created_at)
       if ((new Date() - createdAt) < 180000) {
@@ -39,6 +41,7 @@ export default function ReportsAndAutomation() {
   }, [reports])
 
   const fetchReports = async () => {
+    // Keep loading state only for initial fetch
     if (!isPolling) setLoading(true)
     try {
       const ARCHIVE_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json";
@@ -76,164 +79,170 @@ export default function ReportsAndAutomation() {
     }
   }
 
-  const getAnalysisWindow = () => {
-    const now = new Date()
-    const start = new Date()
-    start.setMonth(now.getMonth() - selectedMonths)
-    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} – ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+  const getRangeLabel = (m) => {
+    if (m === 1) return 'Monthly Pulse'
+    if (m === 3) return 'Quarterly Strategy'
+    if (m === 6) return 'Semi-Annual Outlook'
+    if (m === 12) return 'Annual Executive Review'
+    return `${m}-Month Deep Dive`
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-12 space-y-12 animate-in fade-in duration-700">
-      
-      {/* 1. Pulse Generation Console */}
-      <div className="card-premium p-10 bg-slate-50/50 border-blue-100">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-12">
-          <div className="max-w-xl">
-             <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-bold text-[#0066CC] uppercase tracking-widest bg-blue-50 px-2 py-1 rounded">INDPlus Intelligence</span>
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Model Context Protocol</span>
-             </div>
-             <h2 className="text-2xl font-bold text-slate-900 mb-2">Strategic Intelligence Console</h2>
-             <p className="text-sm text-slate-500 leading-relaxed">
-               Select your strategic window from 1 to 12 months. The AI will synthesize thousands of signals into a one-page executive note, automatically syncing to Google Workspace and drafting leadership reports.
-             </p>
+    <div className="min-h-screen bg-[#0F1115] text-white font-sans p-8">
+      {/* Premium Progress Overlay */}
+      {isPolling && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+          <div className="bg-[#1A1D23] border border-white/10 p-8 rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="flex flex-col items-center text-center">
+              <div className="relative mb-6">
+                <div className="w-20 h-20 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-emerald-500 font-bold">LLM</span>
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Synthesizing Strategic Pulse</h2>
+              <p className="text-gray-400 mb-8">Analysis running in secure cloud container...</p>
+              
+              <div className="w-full space-y-4">
+                {[
+                  { label: "📡 Signal Ingestion", active: pollCount >= 0 },
+                  { label: "🧠 Deep Theme Extraction", active: pollCount >= 2 },
+                  { label: "🎓 Strategic Synthesis", active: pollCount >= 5 },
+                  { label: "📄 Finalizing Report", active: pollCount >= 8 }
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${step.active ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-gray-700'}`}></div>
+                    <span className={step.active ? 'text-white' : 'text-gray-600'}>{step.label}</span>
+                    {step.active && pollCount >= i*3 && pollCount < (i+1)*3 && (
+                      <span className="text-[10px] text-emerald-500 animate-pulse ml-auto">PROCESSING...</span>
+                    )}
+                    {step.active && pollCount >= (i+1)*3 && (
+                      <span className="text-[10px] text-emerald-500 ml-auto">DONE</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-8 text-xs text-gray-500">
+                Polling Cloud Status: {pollCount * 5}s elapsed
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-12 flex justify-between items-end">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
+              INDPlus Archive
+            </h1>
+            <p className="text-gray-400 text-lg">Historical Decisions & Signal Records</p>
           </div>
           
-          <div className="w-full md:w-80 flex flex-col gap-8">
-             <div className="space-y-4">
-                <div className="flex justify-between items-end mb-2">
-                   <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time Window</span>
-                      <span className="text-[9px] font-bold text-[#0066CC] uppercase tracking-widest mt-1">
-                        {getAnalysisWindow()}
-                      </span>
-                   </div>
-                   <span className="text-xl font-bold text-[#0066CC]">{selectedMonths} Months</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="12" 
-                  value={selectedMonths}
-                  onChange={(e) => setSelectedMonths(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0066CC]"
-                />
-                <div className="flex justify-between text-[8px] font-bold text-slate-300 uppercase tracking-widest">
-                   <span>1 Month</span>
-                   <span>6 Months</span>
-                   <span>12 Months</span>
-                </div>
-             </div>
-
-             <div className="space-y-3">
-               <div className="text-center">
-                  <p className="text-[10px] font-bold text-[#0066CC] uppercase tracking-widest bg-blue-50/50 py-1 rounded border border-blue-100/50">
-                    Target: {getRangeLabel(selectedMonths)}
-                  </p>
-               </div>
-               <button 
-                 onClick={handleGenerate}
-                 disabled={generating}
-                 className={`btn-primary w-full py-4 flex items-center justify-center gap-2 shadow-lg shadow-blue-100 ${generating ? 'opacity-70 cursor-not-allowed' : ''}`}
-               >
-                 {generating ? (
-                   <>
-                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                     Analyzing {selectedMonths * 30} Days...
-                   </>
-                 ) : (
-                   '✨ Generate INDPlus Note'
-                 )}
-               </button>
-             </div>
+          <div className="bg-[#1A1D23] p-4 rounded-xl border border-white/10 flex items-center space-x-6">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Rolling Window</span>
+              <select 
+                value={selectedMonths} 
+                onChange={(e) => setSelectedMonths(parseInt(e.target.value))}
+                className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-medium"
+              >
+                <option value={1}>Last 30 Days</option>
+                <option value={3}>Last 90 Days</option>
+                <option value={6}>Last 6 Months</option>
+                <option value={12}>Last 1 Year</option>
+              </select>
+            </div>
+            <button 
+              onClick={handleGenerate}
+              disabled={generating || isPolling}
+              className={`px-6 py-3 rounded-lg font-bold transition-all flex items-center space-x-2 ${
+                generating || isPolling
+                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 active:scale-95'
+              }`}
+            >
+              <span>✨ {generating ? 'Initializing...' : 'Generate INDPlus Note'}</span>
+            </button>
           </div>
-        </div>
-      </div>
+        </header>
 
-      {/* 2. Intelligence Archive */}
-      <div>
-        <div className="flex items-center justify-between mb-8 px-1">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">INDPlus Archive</h2>
-            <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">Historical Decisions & Signal Records</p>
-          </div>
-          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-             Synced to MCP
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Generation Date</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Signals</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Strategic Themes</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                [1,2,3].map(i => (
-                  <tr key={i} className="animate-pulse">
-                    <td colSpan="4" className="px-8 py-6 h-20 bg-slate-50/20" />
-                  </tr>
-                ))
-              ) : reports.length > 0 ? reports.map((report) => (
-                <tr key={report.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-900">
-                        {new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </span>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold">{new Date(report.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-4">
+            {loading && !isPolling ? (
+              <div className="py-20 flex flex-col items-center justify-center border border-white/5 rounded-2xl bg-white/[0.02]">
+                <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-500">Syncing Intelligence Vault...</p>
+              </div>
+            ) : reports.length > 0 ? (
+              reports.map((report) => (
+                <div key={report.id} className="group bg-[#1A1D23] border border-white/5 p-6 rounded-2xl hover:border-white/20 transition-all cursor-pointer relative overflow-hidden" onClick={() => router.push(`/report/${report.id}`)}>
+                  <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded-full border border-emerald-500/20">VIEW INSIGHTS</span>
+                  </div>
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold mb-1">Weekly Pulse #{report.id}</h3>
+                      <p className="text-gray-500 text-sm">
+                        Generated {new Date(report.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="px-3 py-1 bg-blue-50 text-[#0066CC] text-[10px] font-bold rounded-lg border border-blue-100/50">
-                      {report.review_count} Analyzed
-                    </span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-wrap gap-2 max-w-md">
-                      {JSON.parse(report.themes).slice(0, 3).map((theme, i) => (
-                        <span key={i} className="px-2.5 py-1 bg-white text-slate-600 text-[10px] font-bold rounded border border-slate-200 shadow-sm">
-                          {theme.name || theme}
-                        </span>
-                      ))}
+                    <div className="text-right">
+                      <div className="text-2xl font-black text-white">{report.review_count}</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-widest">Signals</div>
                     </div>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <Link href={`/report/${report.id}`} className="inline-flex items-center gap-2 text-[10px] font-bold text-[#0066CC] uppercase tracking-widest hover:underline">
-                      View Insights
-                      <span>→</span>
-                    </Link>
-                  </td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan="4" className="py-20 text-center italic text-slate-400 text-sm">No reports in the intelligence archive.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  </div>
+                  <div className="text-gray-400 text-sm line-clamp-2 italic border-l-2 border-emerald-500/30 pl-4 py-1">
+                    "{report.summary || 'No summary available for this report.'}"
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                <p className="text-gray-500">No reports in the intelligence archive.</p>
+                <button onClick={handleGenerate} className="mt-4 text-emerald-500 hover:underline">Trigger first report</button>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-[#1A1D23] border border-white/5 p-8 rounded-2xl">
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <span className="w-8 h-8 bg-emerald-500/10 text-emerald-500 rounded-lg flex items-center justify-center mr-3 text-sm">🎓</span>
+                Proactive Intelligence
+              </h2>
+              <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                Our AI actively monitors App Store & Play Store signals to proactively detect fee-related friction before it impacts NPS.
+              </p>
+              <div className="space-y-4">
+                <div className="p-4 bg-white/[0.02] rounded-xl border border-white/5">
+                  <div className="text-xs text-gray-500 uppercase mb-1">Status</div>
+                  <div className="flex items-center text-emerald-500 font-bold">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
+                    Synced to GitHub
+                  </div>
+                </div>
+                <div className="p-4 bg-white/[0.02] rounded-xl border border-white/5">
+                  <div className="text-xs text-gray-500 uppercase mb-1">Last Sync</div>
+                  <div className="text-white font-medium">{reports.length > 0 ? new Date(reports[0].created_at).toLocaleTimeString() : 'N/A'}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-emerald-600 to-emerald-900 p-8 rounded-2xl shadow-xl shadow-emerald-900/20">
+              <h3 className="text-xl font-bold mb-2">Live Support</h3>
+              <p className="text-white/80 text-sm mb-6">Need a custom deep-dive report for the board? Trigger a 12-month pulse.</p>
+              <button 
+                onClick={() => { setSelectedMonths(12); handleGenerate(); }}
+                className="w-full py-3 bg-white text-emerald-900 rounded-xl font-bold hover:bg-gray-100 transition-colors"
+              >
+                Board Synthesis (1Y)
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function StatItem({ label, count, color, total }) {
-  const percent = total > 0 ? Math.round((count / total) * 100) : 0
-  return (
-    <div className="flex justify-between items-center">
-      <div>
-        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-        <p className={`text-sm font-bold ${color}`}>{count}</p>
-      </div>
-      <p className="text-[10px] font-bold text-slate-300">{percent}%</p>
     </div>
   )
 }
