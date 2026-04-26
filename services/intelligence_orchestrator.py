@@ -59,6 +59,22 @@ class IntelligenceOrchestrator:
         themes_list = themes_data.get("themes", [])
         note_data = self.note_gen.generate_note(themes_list, filtered_data)
         
+        # Add sentiment to filtered_data if missing (Hybrid Logic)
+        for r in filtered_data:
+            if not r.get('sentiment'):
+                rating = int(r.get('rating', 3))
+                text = r.get('review_text', '')
+                
+                # Rule 1: High Rating -> Positive
+                if rating >= 4:
+                    r['sentiment'] = "Positive"
+                # Rule 2: Low Rating -> Negative
+                elif rating <= 2:
+                    r['sentiment'] = "Negative"
+                # Rule 3: Mid Rating -> AI Triage
+                else:
+                    r['sentiment'] = self.classifier.detect_sentiment(text)
+        
         # 7. Financial Education (Elite Layer)
         fee_scenarios = self.fee_explainer.explain_multiple(fee_types.split(","))
         

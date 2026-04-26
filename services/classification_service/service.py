@@ -30,3 +30,20 @@ class ClassificationService:
         except Exception as e:
             print(f"Classification error: {e}")
             return {"themes": []}
+
+    def detect_sentiment(self, text: str) -> str:
+        """Fast heuristic-based sentiment detection for high-volume pulses."""
+        text = str(text).lower()
+        
+        positive_cues = ["best", "good", "great", "excellent", "love", "smooth", "easy", "perfect", "fast", "thanks", "wow", "amazing", "reliable"]
+        negative_cues = ["bad", "worst", "slow", "error", "fail", "poor", "issue", "problem", "bug", "broken", "expensive", "hidden", "delay", "fraud"]
+        
+        pos_score = sum(1 for word in positive_cues if word in text)
+        neg_score = sum(1 for word in negative_cues if word in text)
+        
+        if pos_score > neg_score:
+            return "Positive"
+        elif neg_score > pos_score:
+            return "Negative"
+        else:
+            return "Neutral"
