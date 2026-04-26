@@ -12,10 +12,6 @@ export default function UnifiedIntelligencePage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const navigateToReviews = (categoryName) => {
-    router.push(`/reviews?time_range=${timeRange}&category=${encodeURIComponent(categoryName)}#review-feed`);
-  };
-
   const fetchIntelligence = async () => {
     setLoading(true)
     try {
