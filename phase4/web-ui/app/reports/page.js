@@ -86,15 +86,9 @@ export default function ReportsAndAutomation() {
   const fetchReports = async (bypassCache = false) => {
     if (!isPolling && !bypassCache) setLoading(true)
     try {
-      // Use the GitHub Contents API for polling instead of the RAW URL to avoid 5-minute caching
-      const GITHUB_API_URL = "https://api.github.com/repos/saikichnit/INDMoney_Reviews_Weekly_Pulse-/contents/data/reports_archive.json";
-      const res = await fetch(GITHUB_API_URL, { 
-        headers: { 
-          'Accept': 'application/vnd.github.v3.raw',
-          'Cache-Control': 'no-cache'
-        }
-      });
-      const data = await res.json();
+      // 1. Use our Server-Side Proxy to avoid GitHub Rate Limits
+      const res = await fetch('/api/fetch-archive')
+      const data = await res.json()
       if (Array.isArray(data)) {
         setReports(data);
       }
