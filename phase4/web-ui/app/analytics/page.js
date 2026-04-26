@@ -95,13 +95,40 @@ export default function UnifiedIntelligencePage() {
           promoters: posCount,
           detractors: negCount
         },
-        categories: Object.keys(catMap).map(name => ({
-          name,
-          count: catMap[name].count,
-          avg_rating: (catMap[name].rating / catMap[name].count).toFixed(1),
-          pos_p: Math.round((catMap[name].pos / catMap[name].count) * 100),
-          health: (catMap[name].pos / catMap[name].count) > 0.6 ? 'Good' : 'Needs Attention'
-        }))
+        categories: Object.keys(catMap).map(name => {
+          const c = catMap[name];
+          const pos_p = Math.round((c.pos / c.count) * 100);
+          const neg_p = Math.round((c.neg / c.count) * 100);
+          
+          const isBug = ['App Crash', 'Performance', 'Account & KYC', 'Charges & Fees'].includes(name);
+          const isFR = name === 'Feature Request';
+          
+          let health = 'Monitor';
+          if (isBug) {
+             health = neg_p > 50 ? 'Critical' : neg_p > 30 ? 'Warning' : 'Stable';
+          } else if (isFR) {
+             health = 'Opportunity';
+          } else {
+             health = pos_p > 60 ? 'Good' : 'Needs Attention';
+          }
+
+          let displayStat = { label: 'Positive', value: `${pos_p}%`, color: 'text-emerald-600' };
+          if (isBug) {
+             displayStat = { label: 'Negative', value: `${neg_p}%`, color: 'text-rose-600' };
+          } else if (isFR) {
+             displayStat = { label: 'Volume', value: `${Math.round((c.count / total) * 100)}%`, color: 'text-blue-600' };
+          }
+
+          return {
+            name,
+            count: c.count,
+            avg_rating: (c.rating / c.count).toFixed(1),
+            pos_p,
+            neg_p,
+            health,
+            displayStat
+          };
+        }).sort((a,b) => b.count - a.count)
       };
       
       setData({ ...transformedData, generated_at: json.generated_at })
@@ -230,7 +257,11 @@ export default function UnifiedIntelligencePage() {
                   <h3 className="text-sm font-semibold text-slate-900 group-hover:text-[#0066CC] transition-colors">{cat.name}</h3>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{cat.count} Signals</p>
                 </div>
-                <span className={`text-[9px] font-bold px-2.5 py-1 rounded-md uppercase tracking-tight ${cat.health === 'Good' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : cat.health === 'Critical' ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
+                <span className={`text-[9px] font-bold px-2.5 py-1 rounded-md uppercase tracking-tight ${
+                  cat.health === 'Good' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
+                  cat.health === 'Critical' ? 'bg-rose-50 text-rose-700 border border-rose-100' : 
+                  cat.health === 'Opportunity' ? 'bg-blue-50 text-[#0066CC] border border-blue-100' : 
+                  'bg-amber-50 text-amber-700 border border-amber-100'}`}>
                   {cat.health}
                 </span>
               </div>
@@ -241,8 +272,8 @@ export default function UnifiedIntelligencePage() {
                    <p className="text-[9px] font-bold text-slate-400 uppercase">Avg Rating</p>
                 </div>
                 <div className="text-right">
-                   <p className="text-lg font-bold text-emerald-600">{cat.pos_p}%</p>
-                   <p className="text-[9px] font-bold text-slate-400 uppercase">Positive</p>
+                   <p className={`text-lg font-bold ${cat.displayStat?.color || 'text-emerald-600'}`}>{cat.displayStat?.value || `${cat.pos_p}%`}</p>
+                   <p className="text-[9px] font-bold text-slate-400 uppercase">{cat.displayStat?.label || 'Positive'}</p>
                 </div>
               </div>
 
