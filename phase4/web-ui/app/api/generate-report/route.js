@@ -11,6 +11,41 @@ export async function POST(request) {
     ? path.join(process.cwd(), '..', '..') 
     : process.cwd();
   
+  // [NEW] GitHub Action Trigger for Vercel/Production
+  const githubToken = process.env.GITHUB_TOKEN;
+  const githubRepo = process.env.GITHUB_REPO || 'saikichnit/INDMoney_Reviews_Weekly_Pulse-';
+
+  if (process.env.VERCEL || githubToken) {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${githubRepo}/actions/workflows/scheduler.yml/dispatches`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ref: 'main',
+          inputs: {
+            max_reviews: maxReviews,
+            weeks: (parseInt(days)/7).toString()
+          }
+        })
+      });
+
+      if (res.ok) {
+        return NextResponse.json({ 
+          status: "started", 
+          message: "GitHub Action triggered. Intelligence Pulse will update in ~2 minutes.",
+          remote: true 
+        });
+      }
+    } catch (e) {
+      console.error("GitHub Action trigger failed", e);
+    }
+  }
+
+  // Fallback to local execution (for local development)
   const bridgePath = path.join(projectRoot, 'phase4', 'generate_bridge.py');
   const command = `python3 "${bridgePath}" --days ${days} --max_reviews ${maxReviews}`;
 

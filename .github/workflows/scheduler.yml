@@ -66,3 +66,11 @@ jobs:
       - name: Stop Services
         run: |
           lsof -ti:8001 | xargs kill -9 || true
+
+      - name: Commit and Push Results
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/latest_pulse.json data/reports_archive.json data/pulse_production.db
+          git commit -m "Auto-Pulse: Intelligence Sync [skip ci]" || echo "No changes to commit"
+          git push
