@@ -79,37 +79,34 @@ try:
                     with open("data/latest_pulse.json", "w") as f:
                         json.dump(latest_data, f, indent=2)
                     
-                    # [NEW] Robust GitHub API Sync (Cloud Ready)
-                    import requests
-                    import base64
-
-                    GITHUB_TOKEN = st.secrets.get("GITHUB_TOKEN")
-                    GITHUB_REPO = st.secrets.get("GITHUB_REPO", "saikichnit/INDMoney_Reviews_Weekly_Pulse-")
+                    # [NEW] Sync the Reports Archive as well
+                    reports_list = db_v10.get_all_reports()
+                    archive_path = "data/reports_archive.json"
+                    with open(archive_path, "w") as f:
+                        json.dump(reports_list, f, indent=2)
                     
                     if GITHUB_TOKEN:
+                        # 1. Sync latest_pulse.json
                         file_path = "data/latest_pulse.json"
                         url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{file_path}"
-                        
-                        # Get existing file SHA to update
                         headers = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
                         r = requests.get(url, headers=headers)
                         sha = r.json().get("sha") if r.status_code == 200 else None
-                        
-                        # Push Update
                         content_b64 = base64.b64encode(json.dumps(latest_data).encode()).decode()
-                        payload = {
-                            "message": "System: Live Bridge Sync",
-                            "content": content_b64,
-                            "branch": "main"
-                        }
+                        payload = { "message": "System: Live Bridge Sync", "content": content_b64, "branch": "main" }
                         if sha: payload["sha"] = sha
-                        
-                        sync_res = requests.put(url, headers=headers, json=payload)
-                        if sync_res.status_code in [200, 201]:
-                            st.sidebar.success("📡 Live Bridge: Synchronized to Main")
-                        else:
-                            st.sidebar.error(f"📡 Sync Failed: {sync_res.status_code}")
-                            st.sidebar.json(sync_res.json())
+                        requests.put(url, headers=headers, json=payload)
+
+                        # 2. Sync reports_archive.json
+                        archive_url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{archive_path}"
+                        r_arch = requests.get(archive_url, headers=headers)
+                        sha_arch = r_arch.json().get("sha") if r_arch.status_code == 200 else None
+                        content_arch_b64 = base64.b64encode(json.dumps(reports_list).encode()).decode()
+                        payload_arch = { "message": "System: Archive Sync", "content": content_arch_b64, "branch": "main" }
+                        if sha_arch: payload_arch["sha"] = sha_arch
+                        requests.put(archive_url, headers=headers, json=payload_arch)
+
+                        st.sidebar.success("📡 Live Bridge & Archive Synchronized")
                     else:
                         st.sidebar.warning("💡 Missing GITHUB_TOKEN in Secrets")
                 except Exception as sync_err:

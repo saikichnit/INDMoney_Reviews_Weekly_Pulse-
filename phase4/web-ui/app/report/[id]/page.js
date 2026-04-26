@@ -14,19 +14,45 @@ export default function ReportPreview() {
   const [editedSummary, setEditedSummary] = useState('')
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports/${id}`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchReport = async () => {
+      setLoading(true)
+      try {
+        // 1. Try local API first
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports/${id}`)
+        const data = await res.json()
         if (data && !data.error) {
           setReport(data)
           setEditedSummary(data.summary || '')
+          setLoading(false)
+          return
         }
+      } catch (e) {}
+
+      // 2. Fallback: Try GitHub Archive (Serverless mode)
+      try {
+        const ARCHIVE_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json";
+        const res = await fetch(ARCHIVE_URL, { cache: 'no-store' });
+        const archive = await res.json();
+        const found = archive.find(r => r.id === parseInt(id));
+        if (found) {
+          // Parse JSON strings if they haven't been parsed yet
+          const parsed = { ...found };
+          if (typeof parsed.themes === 'string') parsed.themes = JSON.parse(parsed.themes);
+          if (typeof parsed.quotes === 'string') parsed.quotes = JSON.parse(parsed.quotes);
+          if (typeof parsed.action_items === 'string') parsed.action_items = JSON.parse(parsed.action_items);
+          if (typeof parsed.fee_scenarios === 'string') parsed.fee_scenarios = JSON.parse(parsed.fee_scenarios || '[]');
+          
+          setReport(parsed)
+          setEditedSummary(parsed.summary || '')
+        }
+      } catch (err) {
+        console.error("All report fetch methods failed", err)
+      } finally {
         setLoading(false)
-      })
-      .catch(err => {
-        console.error("Fetch report failed", err)
-        setLoading(false)
-      })
+      }
+    }
+
+    fetchReport()
   }, [id])
 
   const handleApprove = async (mode = 'both') => {

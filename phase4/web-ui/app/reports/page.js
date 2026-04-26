@@ -17,11 +17,22 @@ export default function ReportsAndAutomation() {
   const fetchReports = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports`)
-      const data = await res.json()
-      setReports(data)
+      // Primary: Use Raw GitHub URL for high reliability on Vercel
+      const ARCHIVE_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json";
+      const res = await fetch(ARCHIVE_URL, { cache: 'no-store' });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setReports(data);
+      } else {
+        throw new Error("Invalid archive data");
+      }
     } catch (err) {
-      console.error(err)
+      console.error("GitHub Archive failed, trying local fallback", err)
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports`)
+        const data = await res.json()
+        setReports(data)
+      } catch (e) {}
     } finally {
       setLoading(false)
     }
@@ -31,13 +42,17 @@ export default function ReportsAndAutomation() {
     setGenerating(true)
     const days = selectedMonths * 30
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/generate-report?days=${days}`, { method: 'POST' })
+      // Use the internal Next.js API bridge instead of the separate 8001 server
+      const res = await fetch(`/api/generate-report?days=${days}`, { method: 'POST' })
       const data = await res.json()
       if (data.report_id) {
         router.push(`/report/${data.report_id}`)
+      } else {
+        alert("Generation failed: " + (data.error || "Unknown error"))
       }
     } catch (err) {
       console.error(err)
+      alert("Network error occurred during generation")
     } finally {
       setGenerating(false)
     }
