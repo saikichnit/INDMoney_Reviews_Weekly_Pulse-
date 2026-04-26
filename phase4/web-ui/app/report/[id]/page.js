@@ -1,15 +1,17 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function ReportPreview() {
   const { id } = useParams()
   const router = useRouter()
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
+  const [approving, setApproving] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [recipientEmail, setRecipientEmail] = useState('')
+  const [recipientEmail, setRecipientEmail] = useState('stakeholders@indmoney.com')
+  const [editedSummary, setEditedSummary] = useState('')
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports/${id}`)
@@ -17,6 +19,7 @@ export default function ReportPreview() {
       .then(data => {
         if (data && !data.error) {
           setReport(data)
+          setEditedSummary(data.summary || '')
         }
         setLoading(false)
       })
@@ -26,30 +29,40 @@ export default function ReportPreview() {
       })
   }, [id])
 
-  const handleDeliver = async () => {
-    if (!recipientEmail) return alert("Please enter a recipient email")
-    setSending(true)
+  const handleApprove = async (mode = 'both') => {
+    setApproving(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/send-email/${id}?recipient_email=${encodeURIComponent(recipientEmail)}`, {
-        method: 'POST'
+      const res = await fetch(`/api/reports/${id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: editedSummary,
+          email: recipientEmail,
+          mode
+        })
       })
+      
+      const result = await res.json()
       if (res.ok) {
         setSuccess(true)
         setTimeout(() => setSuccess(false), 5000)
+      } else {
+        alert("Action failed: " + (result.error || "Unknown error"))
       }
     } catch (err) {
       console.error(err)
+      alert("Network error occurred")
     } finally {
-      setSending(false)
+      setApproving(false)
     }
   }
 
   if (loading) return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto py-8">
-      <div className="h-12 w-1/3 animate-shimmer rounded-lg" />
-      <div className="flex gap-8">
-        <div className="w-2/3 h-[600px] animate-shimmer rounded-2xl" />
-        <div className="w-1/3 h-[400px] animate-shimmer rounded-2xl" />
+      <div className="h-12 w-1/3 animate-pulse bg-slate-100 rounded-lg" />
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="lg:w-2/3 h-[600px] animate-pulse bg-slate-100 rounded-2xl" />
+        <div className="lg:w-1/3 h-[400px] animate-pulse bg-slate-100 rounded-2xl" />
       </div>
     </div>
   )
@@ -63,185 +76,243 @@ export default function ReportPreview() {
   )
 
   return (
-    <div className="max-w-7xl mx-auto py-8 animate-in fade-in duration-700">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-sm font-bold text-[#0066CC] uppercase tracking-widest">Weekly Note</span>
-            <span className="text-slate-200">/</span>
-            <span className="text-sm text-slate-400">{new Date(report.created_at).toLocaleDateString()}</span>
+    <div className="max-w-7xl mx-auto py-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* 1. Header with Breadcrumbs */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-blue-50 text-[#0066CC] rounded-xl flex items-center justify-center shadow-sm">
+             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">Pulse Report Intelligence</h1>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-3">
+              Weekly Pulse Note Preview
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-[#0066CC] rounded-full uppercase tracking-widest">
+                {report.review_count} Reviews Analyzed
+              </span>
+            </h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mt-0.5">Verified Analysis Summary (Editable)</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/reports')} className="btn-secondary">
-            Back to Archive
-          </button>
-        </div>
+        <Link href="/reports" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors flex items-center gap-2">
+           ✕ Close Preview
+        </Link>
       </div>
 
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-center gap-3 text-green-700 animate-in zoom-in duration-300">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-          <span className="font-medium">Appended to Notes + Email Draft Sent Successfully</span>
-        </div>
-      )}
-
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Panel - Insights */}
-        <div className="lg:w-2/3 space-y-6">
-          <div className="card-premium p-8">
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-50">
-              <div className="flex items-center gap-6">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Reviews Analyzed</p>
-                  <p className="font-bold text-slate-900">{report.review_count || 0}</p>
+        
+        {/* LEFT CONTENT: THE REPORT */}
+        <div className="lg:w-2/3 space-y-8">
+          
+          {/* Main Editable Card */}
+          <div className="card-premium p-1 bg-yellow-50/30 border-yellow-100 overflow-hidden shadow-xl shadow-yellow-900/5">
+             <div className="p-8 space-y-6">
+                <textarea 
+                  className="w-full min-h-[400px] bg-transparent text-slate-700 font-mono text-sm leading-relaxed focus:outline-none resize-none"
+                  value={editedSummary}
+                  onChange={(e) => setEditedSummary(e.target.value)}
+                  placeholder="Drafting executive summary..."
+                />
+                <div className="pt-4 border-t border-yellow-100 flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  This note will be used for both Google Docs and the Email Draft.
                 </div>
-                <div className="w-px h-8 bg-slate-100" />
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Source</p>
-                  <p className="font-bold text-slate-900">iOS & Android</p>
-                </div>
-                <div className="w-px h-8 bg-slate-100" />
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">PII Stripped</span>
-                </div>
-              </div>
-            </div>
+             </div>
+          </div>
 
-            <article className="prose max-w-none">
-              <section className="mb-10">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 text-[#0066CC] flex items-center justify-center text-sm">1</span>
-                  Executive Summary
-                </h3>
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-slate-600 leading-relaxed italic">
-                  {report.summary || "No summary available for this report."}
+          {/* Categorized Themes & Sections */}
+          <div className="space-y-6">
+             <div className="flex items-center gap-3 px-1">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0066CC] flex items-center justify-center shadow-sm">
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01" />
+                   </svg>
                 </div>
-              </section>
+                <h3 className="text-lg font-bold text-slate-900">Categorized Themes</h3>
+             </div>
 
-              <section className="mb-10">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 text-[#0066CC] flex items-center justify-center text-sm">2</span>
-                  Top Themes Identified
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {report.themes?.map((theme, i) => (
-                    <div key={i} className="p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-bold text-slate-900">{theme.name || theme}</span>
-                        <span className="text-sm font-bold text-[#0066CC]">{theme.percentage || 0}%</span>
-                      </div>
-                      <div className="w-full bg-slate-50 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-[#0066CC] h-full transition-all duration-1000" style={{ width: `${theme.percentage || 0}%` }} />
-                      </div>
+             <div className="grid grid-cols-1 gap-4">
+                {report.themes?.map((theme, i) => (
+                  <div key={i} className="card-premium p-6 hover:translate-x-1 transition-transform cursor-default">
+                    <div className="flex items-center justify-between mb-2">
+                       <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs shadow-sm">
+                             {theme.name?.[0] || 'T'}
+                          </div>
+                          <span className="font-bold text-slate-900">{theme.name || theme}</span>
+                       </div>
+                       <span className="text-xs font-bold text-[#0066CC] bg-blue-50 px-2 py-0.5 rounded-md">{theme.percentage || 0}% Impact</span>
                     </div>
-                  )) || <p className="text-slate-400 italic text-sm">No themes categorized.</p>}
-                </div>
-              </section>
+                    <p className="text-xs text-slate-500 leading-relaxed pl-11">
+                       High frequency signal detected across multiple platforms. Critical theme for strategic roadmap.
+                    </p>
+                  </div>
+                ))}
+             </div>
+          </div>
 
-              <section className="mb-10">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 text-[#0066CC] flex items-center justify-center text-sm">3</span>
-                  Golden User Quotes
-                </h3>
-                <div className="space-y-4">
-                  {report.quotes?.map((quote, i) => (
-                    <div key={i} className="p-4 border-l-4 border-blue-100 bg-blue-50/20 rounded-r-xl">
-                      <p className="text-slate-600 leading-relaxed italic">"{quote}"</p>
+          {/* Action Ideas */}
+          <div className="space-y-6">
+             <div className="flex items-center gap-3 px-1">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                   </svg>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Action Ideas</h3>
+             </div>
+
+             <div className="space-y-3">
+                {report.action_items?.map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 font-bold text-[10px] flex items-center justify-center border border-slate-100 group-hover:bg-blue-50 group-hover:text-[#0066CC] transition-colors">
+                      {i + 1}
                     </div>
-                  )) || <p className="text-slate-400 italic text-sm">No specific quotes highlighted.</p>}
-                </div>
-              </section>
+                    <p className="text-sm font-medium text-slate-700 leading-relaxed flex-1">{item}</p>
+                  </div>
+                ))}
+             </div>
+          </div>
 
-              <section>
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 text-[#0066CC] flex items-center justify-center text-sm">4</span>
-                  Actionable Recommendations
-                </h3>
-                <ul className="space-y-3">
-                  {report.action_items?.map((item, i) => (
-                    <li key={i} className="flex gap-3 text-slate-600">
-                      <span className="text-green-500 mt-1">✓</span>
-                      <span>{item}</span>
-                    </li>
-                  )) || <li className="text-slate-400 italic text-sm">No recommendations generated.</li>}
-                </ul>
-              </section>
-            </article>
+          <div className="flex justify-between items-center text-[10px] font-bold text-slate-300 uppercase tracking-widest pt-8 border-t border-slate-100">
+             <span>Generated {new Date(report.created_at).toLocaleString()}</span>
+             <div className="flex items-center gap-2">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                No PII included
+             </div>
           </div>
         </div>
 
-        {/* Right Panel - Actions */}
+        {/* RIGHT SIDEBAR: APPROVAL PANEL */}
         <div className="lg:w-1/3">
-          <div className="sticky top-24 space-y-6">
-            <div className="card-premium p-6 border-blue-100 bg-blue-50/10">
-              <h3 className="font-bold text-lg mb-2 text-slate-900">Approve & Deliver</h3>
-              <p className="text-xs text-slate-500 mb-6">Distribute this pulse to the engineering and product channels.</p>
+           <div className="sticky top-12 space-y-6">
               
-              <div className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Recipient Email</label>
-                  <input 
-                    type="email" 
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs font-bold text-slate-700 focus:outline-none focus:border-slate-400 transition-all shadow-sm"
-                    placeholder="e.g. leadership@indmoney.com"
-                  />
-                </div>
-
-                <button 
-                  onClick={handleDeliver}
-                  disabled={sending}
-                  className="btn-primary w-full flex items-center justify-center gap-2 py-3"
-                >
-                  {sending ? 'Delivering...' : '✅ Send an email'}
-                </button>
-                <div className="flex gap-2">
-                  <button className="btn-secondary flex-1 text-[10px]">Copy JSON</button>
-                  <button className="btn-secondary flex-1 text-[10px]">Edit Note</button>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-slate-50">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Google Workspace Automation (MCP)</h4>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase">Synced to Google Docs</span>
+              <div className="card-premium p-8 border-slate-200/60 bg-white shadow-2xl shadow-slate-200/50">
+                 <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                       </svg>
                     </div>
-                    <a 
-                      href="https://docs.google.com/document/d/18CMQaITOJK02gX2BfQwL1Rkw4QWC6sJDMjim865-bOk" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[9px] font-bold text-[#0066CC] hover:underline uppercase tracking-widest"
-                    >
-                      View on Google Docs
-                    </a>
-                  </div>
-                  <button className="w-full py-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">
-                    Re-Sync Strategic Note
-                  </button>
-                </div>
-              </div>
-            </div>
+                    <div>
+                       <h3 className="font-bold text-lg text-slate-900">Approve & Deliver</h3>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stakeholder Distribution</p>
+                    </div>
+                 </div>
 
-            <div className="card-premium p-6">
-              <h3 className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-4">Financial Education</h3>
-              <div className="space-y-4">
-                {report.fee_scenarios?.map((fee, i) => (
-                  <div key={i} className="space-y-1">
-                    <p className="text-xs font-bold text-slate-800">{fee.scenario_name}</p>
-                    <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">{fee.explanation_bullets?.[0]}</p>
-                  </div>
-                )) || <p className="text-[10px] text-slate-400 italic">No education scenarios for this period.</p>}
+                 <div className="space-y-4 mb-8">
+                    {/* Action 1: Google Docs */}
+                    <button 
+                      onClick={() => handleApprove('docs')}
+                      disabled={approving}
+                      className="w-full text-left p-5 rounded-2xl border border-slate-100 bg-white hover:border-blue-100 hover:bg-blue-50/30 transition-all group relative overflow-hidden"
+                    >
+                       <div className="flex items-center gap-4 relative z-10">
+                          <div className="w-10 h-10 bg-blue-100/50 text-[#0066CC] rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                             </svg>
+                          </div>
+                          <div className="flex-1">
+                             <p className="text-sm font-bold text-slate-800">Send to Notes</p>
+                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Push to internal documentation</p>
+                          </div>
+                          <svg className="w-4 h-4 text-slate-300 group-hover:text-[#0066CC] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                          </svg>
+                       </div>
+                    </button>
+
+                    {/* Action 2: Email */}
+                    <div className="w-full text-left p-5 rounded-2xl border border-slate-100 bg-white hover:border-blue-100 hover:bg-blue-50/30 transition-all group">
+                       <div className="flex items-center gap-4 mb-4">
+                          <div className="w-10 h-10 bg-indigo-100/50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                             </svg>
+                          </div>
+                          <div className="flex-1">
+                             <p className="text-sm font-bold text-slate-800">Create Email Draft</p>
+                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Format for stakeholder inbox</p>
+                          </div>
+                          <button 
+                            onClick={() => handleApprove('email')}
+                            disabled={approving}
+                            className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-colors"
+                          >
+                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                             </svg>
+                          </button>
+                       </div>
+                       <input 
+                         type="email" 
+                         className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 px-3 text-[10px] font-bold text-slate-600 focus:outline-none focus:border-indigo-200 transition-all"
+                         value={recipientEmail}
+                         onChange={(e) => setRecipientEmail(e.target.value)}
+                         placeholder="recipient@indmoney.com"
+                       />
+                    </div>
+                 </div>
+
+                 <div className="space-y-4">
+                    <div className="relative">
+                       <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-slate-100"></div>
+                       </div>
+                       <div className="relative flex justify-center text-[8px] font-bold uppercase tracking-widest text-slate-300">
+                          <span className="bg-white px-2">Or Complete</span>
+                       </div>
+                    </div>
+
+                    <button 
+                      onClick={() => handleApprove('both')}
+                      disabled={approving}
+                      className={`w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-emerald-100 transition-all ${approving ? 'opacity-70 scale-95' : 'hover:scale-[1.02] active:scale-95'}`}
+                    >
+                       {approving ? (
+                         <>
+                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Processing...
+                         </>
+                       ) : (
+                         <>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Do Both & Finish
+                         </>
+                       )}
+                    </button>
+                 </div>
+
+                 <div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex gap-3">
+                    <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <p className="text-[10px] font-medium text-slate-500 leading-relaxed">
+                       Upon completion, the system will mark the weekly analysis as reviewed and freeze the data snapshot for this week.
+                    </p>
+                 </div>
               </div>
-            </div>
-          </div>
+
+              {/* Success Badge */}
+              {success && (
+                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-700 animate-in zoom-in duration-300">
+                  <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Pulse Delivered Successfully</span>
+                </div>
+              )}
+
+           </div>
         </div>
       </div>
     </div>

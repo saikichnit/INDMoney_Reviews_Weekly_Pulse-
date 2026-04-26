@@ -71,3 +71,55 @@ class GoogleDocsHelper:
         except Exception as e:
             print(f"ERROR: Google Docs update failed: {e}")
             return False
+
+    def append_report(self, text: str) -> bool:
+        """
+        Appends the report text to the end of the document with a timestamp header.
+        """
+        try:
+            # Try loading from Streamlit Secrets first
+            try:
+                import streamlit as st
+                if "GCP_SERVICE_ACCOUNT" in st.secrets:
+                    creds_dict = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+                    creds = service_account.Credentials.from_service_account_info(
+                        creds_dict, scopes=self.scopes)
+                else:
+                    raise ImportError
+            except (ImportError, KeyError, Exception):
+                if not os.path.exists(self.creds_file):
+                    print(f"ERROR: Credentials file not found: {self.creds_file}")
+                    return False
+                creds = service_account.Credentials.from_service_account_file(
+                    self.creds_file, scopes=self.scopes)
+            
+            service = build('docs', 'v1', credentials=creds)
+
+            # 1. Get document length
+            doc = service.documents().get(documentId=self.doc_id).execute()
+            content = doc.get('body').get('content')
+            end_index = content[-1].get('endIndex') - 1
+
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+            header = f"\n\n--- INDPlus Intelligence Pulse ({timestamp}) ---\n\n"
+            
+            requests = [
+                {
+                    'insertText': {
+                        'location': {
+                            'index': end_index,
+                        },
+                        'text': header + text
+                    }
+                }
+            ]
+
+            service.documents().batchUpdate(
+                documentId=self.doc_id, body={'requests': requests}).execute()
+            
+            print(f"SUCCESS: Report appended to Google Doc {self.doc_id}")
+            return True
+        except Exception as e:
+            print(f"ERROR: Google Docs append failed: {e}")
+            return False
