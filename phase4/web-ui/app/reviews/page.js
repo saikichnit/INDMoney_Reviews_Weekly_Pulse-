@@ -39,10 +39,9 @@ function ReviewsContent() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      // Primary: Fetch from GitHub API (Instant Sync, No Cache)
-      const GITHUB_API_URL = "https://api.github.com/repos/saikichnit/INDMoney_Reviews_Weekly_Pulse-/contents/data/latest_pulse.json?ref=main";
-      const res = await fetch(GITHUB_API_URL, {
-        headers: { "Accept": "application/vnd.github.v3.raw" },
+      // Primary: Use Raw GitHub URL (High-bandwidth, No Rate Limit)
+      const RAW_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/latest_pulse.json";
+      const res = await fetch(RAW_URL, {
         cache: 'no-store'
       });
       const json = await res.json();
