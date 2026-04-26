@@ -27,13 +27,22 @@ export default function UnifiedIntelligencePage() {
       const reviews = json.reviews || [];
       const parseDate = (d) => {
         if (!d) return new Date(0);
-        const parts = d.split('/');
-        if (parts.length === 3) {
-           const dd = new Date(parts[2], parts[0] - 1, parts[1]);
-           if (!isNaN(dd.getTime())) return dd;
+        try {
+          const cleanDate = (typeof d === 'string' && d.includes('T')) ? d.split('.')[0] + 'Z' : d;
+          const dd = new Date(cleanDate);
+          if (!isNaN(dd.getTime())) return dd;
+          
+          if (typeof d === 'string' && d.includes('/')) {
+             const parts = d.split('/');
+             if (parts.length === 3) {
+                const d2 = new Date(parts[2], parts[0] - 1, parts[1]);
+                if (!isNaN(d2.getTime())) return d2;
+             }
+          }
+          return new Date(0);
+        } catch(e) {
+          return new Date(0);
         }
-        const dd = new Date(d);
-        return isNaN(dd.getTime()) ? new Date(0) : dd;
       };
 
       const days = parseInt(timeRange) || 30;

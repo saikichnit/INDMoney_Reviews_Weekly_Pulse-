@@ -176,13 +176,23 @@ function ReviewsContent() {
     
     const parseDate = (d) => {
       if (!d) return new Date(0);
-      const parts = d.split('/');
-      if (parts.length === 3) {
-         const dd = new Date(parts[2], parts[0] - 1, parts[1]);
-         if (!isNaN(dd.getTime())) return dd;
+      try {
+        const cleanDate = (typeof d === 'string' && d.includes('T')) ? d.split('.')[0] + 'Z' : d;
+        const dd = new Date(cleanDate);
+        if (!isNaN(dd.getTime())) return dd;
+        
+        // Fallback for MM/DD/YYYY
+        if (typeof d === 'string' && d.includes('/')) {
+           const parts = d.split('/');
+           if (parts.length === 3) {
+              const d2 = new Date(parts[2], parts[0] - 1, parts[1]);
+              if (!isNaN(d2.getTime())) return d2;
+           }
+        }
+        return new Date(0);
+      } catch(e) {
+        return new Date(0);
       }
-      const dd = new Date(d);
-      return isNaN(dd.getTime()) ? new Date(0) : dd;
     };
 
     let maxTime = 0;
@@ -191,18 +201,15 @@ function ReviewsContent() {
        if (t > maxTime) maxTime = t;
     });
     const anchorDate = maxTime > 0 ? new Date(maxTime) : new Date();
-    
     const cutoffDate = new Date(anchorDate);
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     const timeFiltered = reviews.filter(r => {
-      if (!r.review_date) return true; // Show reviews with missing dates by default
-      const rd = parseDate(r.review_date);
-      return rd >= cutoffDate;
+      if (!r.review_date) return true;
+      return parseDate(r.review_date) >= cutoffDate;
     });
 
     const platformFiltered = timeFiltered.filter(r => platform === 'all' || r.platform?.toLowerCase() === platform.toLowerCase());
-
     const total = platformFiltered.length || 1;
     const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     const sent = { Positive: 0, Neutral: 0, Negative: 0 };
@@ -211,17 +218,11 @@ function ReviewsContent() {
     platformFiltered.forEach(r => {
       const rating = parseInt(r.rating) || 3;
       dist[rating] = (dist[rating] || 0) + 1;
-      
-      // Bulletproof Triage
       let s = "Neutral";
       const rawSent = String(r.sentiment || "").toLowerCase();
-      
       if (rawSent.includes("pos") || rating >= 4) s = "Positive";
       else if (rawSent.includes("neg") || rating <= 2) s = "Negative";
-      else s = "Neutral";
-
       if (sent.hasOwnProperty(s)) sent[s]++;
-      
       if (rating >= 4) promoters++;
       if (rating <= 2) detractors++;
     });
@@ -232,6 +233,8 @@ function ReviewsContent() {
       rating_distribution: dist,
       sentiment_split: sent,
       health_breakdown: { promoters, detractors },
+      anchorDate,
+      cutoffDate,
       platform_counts: {
         android: timeFiltered.filter(r => r.platform?.toLowerCase() === 'android').length,
         ios: timeFiltered.filter(r => r.platform?.toLowerCase() === 'ios').length
@@ -239,17 +242,21 @@ function ReviewsContent() {
     };
   })();
 
-  const filteredReviews = reviews.filter(r => {
-    // 1. Sentiment Filter (Bulletproof Triage)
-    const rating = parseInt(r.rating) || 3;
-    const rawSent = String(r.sentiment || "").toLowerCase();
-    let effectiveSentiment = "neutral";
-    if (rawSent.includes("pos") || rating >= 4) effectiveSentiment = "positive";
-    else if (rawSent.includes("neg") || rating <= 2) effectiveSentiment = "negative";
+  const filteredReviews = (() => {
+    const days = parseInt(timeRange) || 30;
+    const anchorDate = reactiveMetrics.anchorDate;
+    const cutoffDate = new Date(anchorDate);
+    cutoffDate.setDate(cutoffDate.getDate() - days);
 
-    const matchesSentiment = sentimentTab === 'All' || 
-      effectiveSentiment === sentimentTab.toLowerCase();
-    const matchesPlatform = platform === 'all' || r.platform?.toLowerCase() === platform.toLowerCase();
+    const parseDate = (d) => {
+      if (!d) return new Date(0);
+      try {
+        const cleanDate = (typeof d === 'string' && d.includes('T')) ? d.split('.')[0] + 'Z' : d;
+        const dd = new Date(cleanDate);
+        return isNaN(dd.getTime()) ? new Date(0) : dd;
+      } catch(e) { return new Date(0); }
+    };
+
     const classifyLocally = (text, rating) => {
       const t = (text || "").toLowerCase();
       if (t.match(/crash|close|stuck|freeze|not opening|broken|bug/)) return 'App Crash';
@@ -262,39 +269,23 @@ function ReviewsContent() {
       return parseInt(rating) >= 4 ? 'General Praise' : 'General Feedback';
     };
 
-    const effectiveCategory = r.category && r.category !== 'null' && r.category !== 'undefined' ? r.category : classifyLocally(r.review_text, r.rating);
-    const matchesCategory = !category || effectiveCategory === category;
-    
-    // Time filtering logic
-    const days = parseInt(timeRange) || 30;
-    const parseDate = (d) => {
-      if (!d) return new Date(0);
-      const parts = d.split('/');
-      if (parts.length === 3) {
-         const dd = new Date(parts[2], parts[0] - 1, parts[1]);
-         if (!isNaN(dd.getTime())) return dd;
-      }
-      const dd = new Date(d);
-      return isNaN(dd.getTime()) ? new Date(0) : dd;
-    };
-    let maxTime = 0;
-    reviews.forEach(r => {
-       const t = parseDate(r.review_date).getTime();
-       if (t > maxTime) maxTime = t;
-    });
-    const anchorDate = maxTime > 0 ? new Date(maxTime) : new Date();
-    const cutoffDate = new Date(anchorDate);
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    const matchesTime = !r.review_date || parseDate(r.review_date) >= cutoffDate;
-
-    const matchesSearch = !searchQuery || 
-      r.review_text?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      r.user_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return reviews.filter(r => {
+      const rating = parseInt(r.rating) || 3;
+      const rawSent = String(r.sentiment || "").toLowerCase();
+      let effectiveSentiment = (rawSent.includes("pos") || rating >= 4) ? "positive" : (rawSent.includes("neg") || rating <= 2) ? "negative" : "neutral";
       
-    return matchesSentiment && matchesPlatform && matchesCategory && matchesTime && matchesSearch;
-  });
+      const matchesSentiment = sentimentTab === 'All' || effectiveSentiment === sentimentTab.toLowerCase();
+      const matchesPlatform = platform === 'all' || r.platform?.toLowerCase() === platform.toLowerCase();
+      const effectiveCategory = r.category && r.category !== 'null' && r.category !== 'undefined' ? r.category : classifyLocally(r.review_text, r.rating);
+      const matchesCategory = !category || effectiveCategory === category;
+      const matchesTime = !r.review_date || parseDate(r.review_date) >= cutoffDate;
+      const matchesSearch = !searchQuery || r.review_text?.toLowerCase().includes(searchQuery.toLowerCase()) || r.user_name?.toLowerCase().includes(searchQuery.toLowerCase());
 
-  if (loading && !metrics) return <div className="p-20 text-center text-slate-400">Analyzing signals...</div>
+      return matchesSentiment && matchesPlatform && matchesCategory && matchesTime && matchesSearch;
+    });
+  })();
+
+  if (loading && !reactiveMetrics.total_reviews && reviews.length === 0) return <div className="p-20 text-center text-slate-400">Analyzing signals...</div>
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-12 space-y-12">
@@ -356,10 +347,8 @@ function ReviewsContent() {
             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rolling Signal Analysis:</span>
             <span className="text-[9px] font-bold text-[#0066CC] uppercase tracking-widest">
               {(() => {
-                const now = new Date()
-                const days = parseInt(timeRange) || 30
-                const start = new Date()
-                start.setDate(now.getDate() - days)
+                const now = reactiveMetrics.anchorDate || new Date()
+                const start = reactiveMetrics.cutoffDate || new Date()
                 return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} – ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
               })()}
             </span>
