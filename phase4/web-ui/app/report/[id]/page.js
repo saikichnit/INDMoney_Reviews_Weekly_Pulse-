@@ -155,6 +155,59 @@ export default function ReportPreview() {
              </div>
           </div>
 
+          {/* 🎓 Proactive Financial Education */}
+          {report.fee_scenarios?.length > 0 && (
+            <div className="space-y-6">
+               <div className="flex items-center gap-3 px-1">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0066CC] flex items-center justify-center shadow-sm">
+                     <span className="text-sm">🎓</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">Proactive Financial Education</h3>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {report.fee_scenarios.map((fee, i) => (
+                    <div key={i} className="p-6 bg-blue-50/30 border border-blue-100 rounded-2xl space-y-3">
+                       <h4 className="font-bold text-slate-900 text-sm">{fee.scenario_name}</h4>
+                       <ul className="space-y-2">
+                          {fee.explanation_bullets?.slice(0, 2).map((bullet, j) => (
+                            <li key={j} className="text-xs text-slate-600 flex gap-2">
+                               <span className="text-blue-400 mt-1">•</span>
+                               {bullet}
+                            </li>
+                          ))}
+                       </ul>
+                       {fee.source_links?.[0] && (
+                         <a href={fee.source_links[0]} target="_blank" className="text-[10px] font-bold text-[#0066CC] uppercase tracking-widest hover:underline block pt-2">
+                            Read Official Source
+                         </a>
+                       )}
+                    </div>
+                  ))}
+               </div>
+            </div>
+          )}
+
+          {/* Golden User Quotes */}
+          <div className="space-y-6">
+             <div className="flex items-center gap-3 px-1">
+                <div className="w-8 h-8 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center shadow-sm">
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                   </svg>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Golden User Quotes</h3>
+             </div>
+
+             <div className="space-y-4">
+                {report.quotes?.map((quote, i) => (
+                  <div key={i} className="p-6 bg-white border border-slate-100 rounded-2xl shadow-sm border-l-4 border-l-[#0066CC]">
+                    <p className="text-sm italic text-slate-600 leading-relaxed">"{quote}"</p>
+                  </div>
+                ))}
+             </div>
+          </div>
+
           {/* Action Ideas */}
           <div className="space-y-6">
              <div className="flex items-center gap-3 px-1">
