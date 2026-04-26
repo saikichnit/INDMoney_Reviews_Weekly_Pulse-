@@ -37,17 +37,39 @@ class IntelligenceOrchestrator:
         self.mcp_client = MCPClient()
         self.pdf_service = PDFService()
 
-    def run_pipeline(self, fee_types="exit_load,brokerage_fee", max_reviews=300, days=60):
-        # 1. Ingestion: Try Live API first in Cloud/Prod
-        try:
-            from services.ingestion_service.real_ingestor import RealIngestor
+    def run_pipeline(self, fee_types="exit_load,brokerage_fee", max_reviews=1000, days=30):
+        # 1. Check if we need fresh ingestion (Cache for 24h)
+        with self.db._get_connection() as conn:
+            try:
+                # Check when the last report was generated
+                result = conn.execute("SELECT MAX(created_at) FROM reports").fetchone()
+                last_report_at = result[0] if result and result[0] else None
+                needs_ingest = True
+                if last_report_at:
+                    # If we generated a report in the last 24h, we likely have fresh data
+                    last_dt = datetime.fromisoformat(last_report_at.split('.')[0])
+                    if (datetime.now() - last_dt).days < 1:
+                        needs_ingest = False
+                        print("⚡ Using Cached Signals (Freshness < 24h)")
+            except Exception as e:
+                print(f"Cache check error: {e}")
+                needs_ingest = True
+
+        if needs_ingest:
+            print("📡 Cache Miss: Starting Live Signal Ingestion...")
             real_ingestor = RealIngestor(self.db)
             raw_data = real_ingestor.fetch_reviews(limit=max_reviews)
-        except Exception as e:
-            print(f"⚠️ Live Ingestion failed/skipped: {e}")
-            raw_data = self.ingestor.fetch_from_local("data/raw", limit=max_reviews, days=days)
+            self.db.save_raw_reviews(raw_data)
+        
+        # Fetch current data from DB for analysis
+        with self.db._get_connection() as conn:
+            import pandas as pd
+            # Get reviews for the requested window
+            query = f"SELECT * FROM raw_reviews WHERE review_date > datetime('now', '-{days} days')"
+            raw_data = pd.read_sql_query(query, conn).to_dict('records')
 
         if not raw_data:
+            print("⚠️ No signals found in DB for the selected period.")
             return None, None
 
         # 2-4. Core Synthesis

@@ -9,32 +9,48 @@ export default function ReportsAndAutomation() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [selectedMonths, setSelectedMonths] = useState(3)
+  const [isPolling, setIsPolling] = useState(false)
+  const [pollCount, setPollCount] = useState(0)
 
   useEffect(() => {
     fetchReports()
   }, [])
 
+  useEffect(() => {
+    let interval;
+    if (isPolling) {
+      interval = setInterval(() => {
+        setPollCount(prev => prev + 1)
+        fetchReports()
+      }, 5000)
+    }
+    return () => clearInterval(interval)
+  }, [isPolling])
+
+  useEffect(() => {
+    if (isPolling && reports.length > 0) {
+      const latest = reports[0]
+      const createdAt = new Date(latest.created_at)
+      if ((new Date() - createdAt) < 180000) {
+        setIsPolling(false)
+        router.push(`/report/${latest.id}`)
+      }
+    }
+  }, [reports])
+
   const fetchReports = async () => {
-    setLoading(true)
+    if (!isPolling) setLoading(true)
     try {
-      // Primary: Use Raw GitHub URL for high reliability on Vercel
       const ARCHIVE_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json";
       const res = await fetch(ARCHIVE_URL, { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data)) {
         setReports(data);
-      } else {
-        throw new Error("Invalid archive data");
       }
     } catch (err) {
-      console.error("GitHub Archive failed, trying local fallback", err)
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports`)
-        const data = await res.json()
-        setReports(data)
-      } catch (e) {}
+      console.error(err)
     } finally {
-      setLoading(false)
+      if (!isPolling) setLoading(false)
     }
   }
 
@@ -42,31 +58,22 @@ export default function ReportsAndAutomation() {
     setGenerating(true)
     const days = selectedMonths * 30
     try {
-      // Use the internal Next.js API bridge instead of the separate 8001 server
       const res = await fetch(`/api/generate-report?days=${days}`, { method: 'POST' })
       const data = await res.json()
       
       if (data.report_id) {
         router.push(`/report/${data.report_id}`)
       } else if (data.status === "started") {
-        alert(data.message || "Generation started in the cloud. Please refresh in 2 minutes.")
+        setIsPolling(true)
+        setPollCount(0)
       } else {
         alert("Generation failed: " + (data.error || "Unknown error"))
       }
     } catch (err) {
       console.error(err)
-      alert("Network error occurred during generation")
     } finally {
       setGenerating(false)
     }
-  }
-
-  const getRangeLabel = (m) => {
-    if (m === 1) return 'Monthly Pulse'
-    if (m === 3) return 'Quarterly Strategy'
-    if (m === 6) return 'Semi-Annual Outlook'
-    if (m === 12) return 'Annual Executive Review'
-    return `${m}-Month Deep Dive`
   }
 
   const getAnalysisWindow = () => {

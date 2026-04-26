@@ -18,13 +18,26 @@ export async function POST(request) {
   // If we are on Vercel, we MUST use GitHub Actions. Local python3 won't work.
   if (process.env.VERCEL) {
     if (!githubToken) {
-      return NextResponse.json({ 
-        error: "Configuration Required", 
-        message: "Please add 'GITHUB_TOKEN' to your Vercel Environment Variables to enable remote generation. Check the README for instructions." 
-      }, { status: 400 });
+      return NextResponse.json({ error: "Configuration Required", message: "Missing GITHUB_TOKEN." }, { status: 400 });
     }
 
     try {
+      // 1. Check for existing in-progress actions to prevent duplicates
+      const actionsRes = await fetch(`https://api.github.com/repos/${githubRepo}/actions/runs?status=in_progress`, {
+        headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      const actionsData = await actionsRes.json();
+      const inProgress = actionsData.workflow_runs?.filter(run => run.name.includes("Weekly Review Pulse") || run.path.includes("scheduler.yml"));
+
+      if (inProgress && inProgress.length > 0) {
+        return NextResponse.json({ 
+          status: "started", 
+          message: "An analysis is ALREADY running. Please wait for it to finish.",
+          remote: true 
+        });
+      }
+
+      // 2. Trigger new action
       const res = await fetch(`https://api.github.com/repos/${githubRepo}/actions/workflows/scheduler.yml/dispatches`, {
         method: 'POST',
         headers: {
