@@ -76,11 +76,19 @@ export async function POST(request) {
         })
       });
 
-      if (res.ok) {
+      if (res.status === 204) {
+        // Wait 1 second for the run to appear in the list
+        await new Promise(r => setTimeout(r, 1500));
+        const runsRes = await fetch(`https://api.github.com/repos/${githubRepo}/actions/runs?per_page=1`, {
+          headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        const runsData = await runsRes.json();
+        const runId = runsData.workflow_runs?.[0]?.id;
+
         return NextResponse.json({ 
           status: "started", 
-          message: "GitHub Action triggered! The analysis is running in the cloud. Check back in 2 minutes.",
-          remote: true 
+          run_id: runId,
+          message: "Intelligence synthesis dispatched to cloud worker." 
         });
       } else {
         const errData = await res.json();

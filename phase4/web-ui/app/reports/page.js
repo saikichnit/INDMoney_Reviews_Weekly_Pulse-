@@ -17,16 +17,40 @@ export default function ReportsAndAutomation() {
     fetchReports()
   }, [])
 
+  const [runId, setRunId] = useState(null)
+  const [runStatus, setRunStatus] = useState('queued')
+
   useEffect(() => {
     let interval;
     if (isPolling) {
       interval = setInterval(() => {
         setPollCount(prev => prev + 1)
-        fetchReports(true)
+        if (runId) {
+          checkRunStatus()
+        } else {
+          fetchReports(true)
+        }
       }, 3000)
     }
     return () => clearInterval(interval)
-  }, [isPolling])
+  }, [isPolling, runId])
+
+  const checkRunStatus = async () => {
+    try {
+      // Use the Next.js API as a proxy to check GitHub Action status (avoids CORS/Token leaks)
+      const res = await fetch(`/api/check-run?run_id=${runId}`)
+      const data = await res.json()
+      setRunStatus(data.status) // 'queued', 'in_progress', 'completed'
+      
+      if (data.status === 'completed') {
+        fetchReports(true)
+      }
+    } catch (err) {
+      console.error(err)
+      // Fallback to report polling if status check fails
+      fetchReports(true)
+    }
+  }
 
   useEffect(() => {
     if (isPolling && reports.length > 0 && startTime) {
@@ -43,9 +67,14 @@ export default function ReportsAndAutomation() {
   const fetchReports = async (bypassCache = false) => {
     if (!isPolling && !bypassCache) setLoading(true)
     try {
-      const cacheBuster = bypassCache ? `?t=${Date.now()}` : ''
-      const ARCHIVE_URL = `https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json${cacheBuster}`;
-      const res = await fetch(ARCHIVE_URL, { cache: 'no-store' });
+      // Use the GitHub Contents API for polling instead of the RAW URL to avoid 5-minute caching
+      const GITHUB_API_URL = "https://api.github.com/repos/saikichnit/INDMoney_Reviews_Weekly_Pulse-/contents/data/reports_archive.json";
+      const res = await fetch(GITHUB_API_URL, { 
+        headers: { 
+          'Accept': 'application/vnd.github.v3.raw',
+          'Cache-Control': 'no-cache'
+        }
+      });
       const data = await res.json();
       if (Array.isArray(data)) {
         setReports(data);
@@ -70,6 +99,7 @@ export default function ReportsAndAutomation() {
       if (data.report_id) {
         router.push(`/report/${data.report_id}`)
       } else if (data.status === "started") {
+        if (data.run_id) setRunId(data.run_id)
         setIsPolling(true)
         setPollCount(0)
       } else {
@@ -195,24 +225,33 @@ export default function ReportsAndAutomation() {
               <p className="text-slate-400 mb-12">Analysis running in secure cloud container...</p>
               
               <div className="space-y-5 text-left max-w-xs mx-auto">
-                {[
-                  { label: "Signal Ingestion", active: pollCount >= 0 },
-                  { label: "Deep Theme Extraction", active: pollCount >= 3 },
-                  { label: "Strategic Synthesis", active: pollCount >= 7 },
-                  { label: "Finalizing Report", active: pollCount >= 10 }
-                ].map((step, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-1.5 h-1.5 rounded-full ${step.active ? 'bg-[#0066CC]' : 'bg-gray-200'}`}></div>
-                      <span className={`text-sm font-bold uppercase tracking-widest ${step.active ? 'text-slate-800' : 'text-gray-300'}`}>{step.label}</span>
-                    </div>
-                    {step.active && (
-                      <span className="text-[10px] font-black text-[#0066CC] tracking-tighter">
-                        {pollCount >= (i+1)*3.5 ? 'DONE' : 'PENDING...'}
-                      </span>
-                    )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-1.5 h-1.5 rounded-full ${runStatus !== 'queued' ? 'bg-[#0066CC]' : 'bg-gray-200'}`}></div>
+                    <span className={`text-sm font-bold uppercase tracking-widest ${runStatus !== 'queued' ? 'text-slate-800' : 'text-gray-300'}`}>Cloud Environment</span>
                   </div>
-                ))}
+                  <span className="text-[10px] font-black text-[#0066CC] tracking-tighter">
+                    {runStatus === 'queued' ? 'QUEUING...' : 'READY'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-1.5 h-1.5 rounded-full ${runStatus === 'in_progress' || runStatus === 'completed' ? 'bg-[#0066CC]' : 'bg-gray-200'}`}></div>
+                    <span className={`text-sm font-bold uppercase tracking-widest ${runStatus === 'in_progress' || runStatus === 'completed' ? 'text-slate-800' : 'text-gray-300'}`}>AI Synthesis</span>
+                  </div>
+                  <span className="text-[10px] font-black text-[#0066CC] tracking-tighter">
+                    {runStatus === 'in_progress' ? 'PROCESSING...' : (runStatus === 'completed' ? 'DONE' : 'PENDING')}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-1.5 h-1.5 rounded-full ${runStatus === 'completed' ? 'bg-[#0066CC]' : 'bg-gray-200'}`}></div>
+                    <span className={`text-sm font-bold uppercase tracking-widest ${runStatus === 'completed' ? 'text-slate-800' : 'text-gray-300'}`}>Finalizing Report</span>
+                  </div>
+                  <span className="text-[10px] font-black text-[#0066CC] tracking-tighter">
+                    {runStatus === 'completed' ? 'SYNCING...' : 'PENDING'}
+                  </span>
+                </div>
               </div>
               <div className="mt-16 text-gray-300 text-[10px] font-bold uppercase tracking-widest">
                 ELAPSED TIME: {pollCount * 5} SECONDS
