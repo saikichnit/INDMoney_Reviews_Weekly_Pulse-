@@ -106,7 +106,10 @@ function ReviewsContent() {
         const res = await fetch(`/api/reviews/${reviewId}/assign`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ assigned_to: pmName })
+          body: JSON.stringify({ 
+             assigned_to: pmName,
+             review_data: reviews.find(r => r.id === reviewId) || {}
+          })
         });
         const result = await res.json();
         if (result.jira_id) simulatedJiraId = result.jira_id;
