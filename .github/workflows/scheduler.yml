@@ -27,10 +27,11 @@ jobs:
           python-with: '3.9'
           cache: 'pip'
 
-      - name: Install Dependencies
+      - name: Install Essential Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          # Only install core synthesis engines to save time
+          pip install pandas requests python-dotenv fpdf2 google-generativeai groq app-store-scraper google-play-scraper
 
       - name: Generate Intelligence Pulse
         env:

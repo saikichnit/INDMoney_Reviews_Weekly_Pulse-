@@ -23,7 +23,7 @@ export default function ReportsAndAutomation() {
       interval = setInterval(() => {
         setPollCount(prev => prev + 1)
         fetchReports(true)
-      }, 5000)
+      }, 3000)
     }
     return () => clearInterval(interval)
   }, [isPolling])
