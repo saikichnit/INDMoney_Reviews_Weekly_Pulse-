@@ -22,10 +22,16 @@ export async function POST(request) {
     }
 
     try {
-      // 1. ROOT CAUSE FIX: Check if a fresh report for this window already exists (Cache for 1 hour)
-      // This makes the response INSTANT (5-10s) instead of 80s.
-      const ARCHIVE_URL = `https://raw.githubusercontent.com/${githubRepo}/main/data/reports_archive.json?t=${Date.now()}`;
-      const archiveRes = await fetch(ARCHIVE_URL, { cache: 'no-store' });
+      // 1. ROOT CAUSE FIX: Check if a fresh report for this window already exists
+      // Use the GitHub API (not RAW) to bypass the 5-minute cache.
+      const ARCHIVE_API_URL = `https://api.github.com/repos/${githubRepo}/contents/data/reports_archive.json`;
+      const archiveRes = await fetch(ARCHIVE_API_URL, { 
+        headers: { 
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3.raw'
+        },
+        cache: 'no-store'
+      });
       const reports = await archiveRes.json();
       
       if (Array.isArray(reports) && reports.length > 0) {

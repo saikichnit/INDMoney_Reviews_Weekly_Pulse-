@@ -56,17 +56,17 @@ export default function ReportsAndAutomation() {
 
   const checkRunStatus = async () => {
     try {
-      // Use the Next.js API as a proxy to check GitHub Action status (avoids CORS/Token leaks)
       const res = await fetch(`/api/check-run?run_id=${runId}`)
       const data = await res.json()
-      setRunStatus(data.status) // 'queued', 'in_progress', 'completed'
+      setRunStatus(data.status) 
       
       if (data.status === 'completed') {
+        // High-frequency retry after completion to catch the new file immediately
         fetchReports(true)
+        // If not found yet, don't stop polling, just keep checking until the id changes
       }
     } catch (err) {
       console.error(err)
-      // Fallback to report polling if status check fails
       fetchReports(true)
     }
   }
