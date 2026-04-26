@@ -112,9 +112,22 @@ function ReviewsContent() {
           })
         });
         const result = await res.json();
-        if (result.jira_id) simulatedJiraId = result.jira_id;
+        
+        if (result.error || result.details) {
+           console.error("Jira Error from API:", result);
+           setToast({ message: `Jira Failed: ${result.error}`, subtext: result.details || "Check Vercel Environment Variables" });
+           setTimeout(() => setToast(null), 5000);
+           return; // Stop here if Jira failed
+        }
+        
+        if (result.jira_id) {
+           simulatedJiraId = result.jira_id;
+        } else if (result.fallback) {
+           // Fallback logic
+           simulatedJiraId = result.jira_id || `IND-${Math.floor(1000 + Math.random() * 9000)}`;
+        }
       } catch (e) {
-        console.log("Local assignment mode active");
+        console.log("Local assignment mode active", e);
       }
       
       setToast({ message: `Assigned to ${pmName}`, subtext: `Ticket Created: ${simulatedJiraId}` })

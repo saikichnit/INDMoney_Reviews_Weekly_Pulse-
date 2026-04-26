@@ -58,14 +58,12 @@ export async function POST(request, { params }) {
        }
     }
     
-    // --- FALLBACK: SIMULATED JIRA ---
-    // Runs if no credentials are added to Vercel
-    const mockJiraId = `IND-${Math.floor(1000 + Math.random() * 9000)}`;
+    // --- ERROR: Missing Credentials ---
     return NextResponse.json({ 
-      success: true, 
-      jira_id: mockJiraId, 
-      assigned_to: pmName 
-    });
+      success: false, 
+      error: "Missing Jira Credentials", 
+      details: "Please add JIRA_API_TOKEN to Vercel Environment Variables." 
+    }, { status: 400 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
