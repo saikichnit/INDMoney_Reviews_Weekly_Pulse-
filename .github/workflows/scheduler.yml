@@ -32,7 +32,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Start Backend Service
+      - name: Generate Intelligence Pulse
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -40,27 +40,11 @@ jobs:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           SMTP_HOST: smtp.gmail.com
           SMTP_PORT: 587
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)/phase2:$(pwd)/phase3
-          python phase2/main.py &
-          sleep 10 # Wait for server to start
-
-      - name: Generate Weekly Pulse
-        run: |
-          python phase4/cli/pulse_cli.py generate-report \
-            --name "Stakeholder" \
-            --max-reviews ${{ github.event.inputs.max_reviews || 1000 }} \
-            --weeks ${{ github.event.inputs.weeks || 8 }}
-        
-      - name: Send Email Notification
-        run: |
-          # Get the latest report ID from the CLI list
-          REPORT_ID=$(python phase4/cli/pulse_cli.py list-reports | head -n 4 | tail -n 1 | awk '{print $1}')
-          echo "Sending Report ID: $REPORT_ID"
-          python phase4/cli/pulse_cli.py send-email \
-            --id $REPORT_ID \
-            --name "Stakeholder" \
-            --email "liger5831@gmail.com"
+          python phase4/generate_bridge.py \
+            --days ${{ github.event.inputs.weeks || 8 }} \
+            --max_reviews ${{ github.event.inputs.max_reviews || 1000 }}
 
       - name: Stop Services
         run: |
