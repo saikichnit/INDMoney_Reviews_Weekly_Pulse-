@@ -211,15 +211,21 @@ function ReviewsContent() {
         </div>
         
         <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-          {['all', 'android', 'ios'].map(p => (
-            <button
-              key={p}
-              onClick={() => setPlatform(p)}
-              className={`px-5 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all ${platform === p ? 'bg-white text-[#0066CC] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              {p}
-            </button>
-          ))}
+          {['all', 'android', 'ios'].map(p => {
+            const count = p === 'all' ? reactiveMetrics.total_reviews : reviews.filter(r => r.platform?.toLowerCase() === p).length;
+            return (
+              <button
+                key={p}
+                onClick={() => setPlatform(p)}
+                className={`px-5 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all flex items-center gap-2 ${platform === p ? 'bg-white text-[#0066CC] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                {p}
+                <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${platform === p ? 'bg-slate-50 text-[#0066CC]' : 'bg-slate-200/50 text-slate-400'}`}>
+                  {count.toLocaleString()}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -377,12 +383,15 @@ function ReviewCard({ r, onClick }) {
     <div onClick={onClick} className="p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer relative">
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-2">
-           <div className={`w-1.5 h-1.5 rounded-full ${r.sentiment === 'Positive' ? 'bg-emerald-500' : r.sentiment === 'Negative' ? 'bg-rose-500' : 'bg-amber-500'}`} />
+           <div className={`w-1.5 h-1.5 rounded-full ${r.sentiment?.toLowerCase() === 'positive' ? 'bg-emerald-500' : r.sentiment?.toLowerCase() === 'negative' ? 'bg-rose-500' : 'bg-amber-500'}`} />
            <span className="text-[11px] font-bold text-slate-800">{r.user_name || 'User'}</span>
            <span className="text-amber-500 text-[8px] tracking-widest ml-1">{'★'.repeat(r.rating)}</span>
+           <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${r.sentiment?.toLowerCase() === 'positive' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : r.sentiment?.toLowerCase() === 'negative' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+             {r.sentiment}
+           </span>
         </div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex gap-3">
-           <span>{r.platform}</span>
+        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex gap-3 items-center">
+           <span className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{r.platform}</span>
            <span>{new Date(r.review_date).toLocaleDateString()}</span>
         </div>
       </div>
