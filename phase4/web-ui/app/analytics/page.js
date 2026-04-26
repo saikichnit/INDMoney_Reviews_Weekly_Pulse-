@@ -25,23 +25,32 @@ export default function UnifiedIntelligencePage() {
       
       // 1. Transform & Filter Data Locally for full reactivity
       const reviews = json.reviews || [];
-      const days = parseInt(timeRange) || 30;
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - days);
-
       const parseDate = (d) => {
-        if (!d) return new Date();
+        if (!d) return new Date(0);
         const parts = d.split('/');
         if (parts.length === 3) {
            const dd = new Date(parts[2], parts[0] - 1, parts[1]);
            if (!isNaN(dd.getTime())) return dd;
         }
         const dd = new Date(d);
-        return isNaN(dd.getTime()) ? new Date() : dd;
+        return isNaN(dd.getTime()) ? new Date(0) : dd;
       };
 
+      const days = parseInt(timeRange) || 30;
+      
+      // Relative Time Anchor: Base 'today' on the newest review in the dataset
+      let maxTime = 0;
+      reviews.forEach(r => {
+         const t = parseDate(r.review_date).getTime();
+         if (t > maxTime) maxTime = t;
+      });
+      const anchorDate = maxTime > 0 ? new Date(maxTime) : new Date();
+      
+      const cutoffDate = new Date(anchorDate);
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+
       const timeFiltered = reviews.filter(r => {
-        if (!r.review_date) return true;
+        if (!r.review_date) return true; // Keep reviews missing dates
         return parseDate(r.review_date) >= cutoffDate;
       });
       

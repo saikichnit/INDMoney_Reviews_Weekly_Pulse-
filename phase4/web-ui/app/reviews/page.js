@@ -173,20 +173,27 @@ function ReviewsContent() {
   // 4. REACTIVE METRICS CALCULATION
   const reactiveMetrics = (() => {
     const days = parseInt(timeRange) || 30;
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-
+    
     const parseDate = (d) => {
-      if (!d) return new Date(); // Safety Net: Treat missing dates as 'Just Now'
+      if (!d) return new Date(0);
       const parts = d.split('/');
       if (parts.length === 3) {
-         // Try to handle MM/DD/YYYY
          const dd = new Date(parts[2], parts[0] - 1, parts[1]);
          if (!isNaN(dd.getTime())) return dd;
       }
       const dd = new Date(d);
-      return isNaN(dd.getTime()) ? new Date() : dd;
+      return isNaN(dd.getTime()) ? new Date(0) : dd;
     };
+
+    let maxTime = 0;
+    reviews.forEach(r => {
+       const t = parseDate(r.review_date).getTime();
+       if (t > maxTime) maxTime = t;
+    });
+    const anchorDate = maxTime > 0 ? new Date(maxTime) : new Date();
+    
+    const cutoffDate = new Date(anchorDate);
+    cutoffDate.setDate(cutoffDate.getDate() - days);
 
     const timeFiltered = reviews.filter(r => {
       if (!r.review_date) return true; // Show reviews with missing dates by default
@@ -260,9 +267,25 @@ function ReviewsContent() {
     
     // Time filtering logic
     const days = parseInt(timeRange) || 30;
-    const cutoffDate = new Date();
+    const parseDate = (d) => {
+      if (!d) return new Date(0);
+      const parts = d.split('/');
+      if (parts.length === 3) {
+         const dd = new Date(parts[2], parts[0] - 1, parts[1]);
+         if (!isNaN(dd.getTime())) return dd;
+      }
+      const dd = new Date(d);
+      return isNaN(dd.getTime()) ? new Date(0) : dd;
+    };
+    let maxTime = 0;
+    reviews.forEach(r => {
+       const t = parseDate(r.review_date).getTime();
+       if (t > maxTime) maxTime = t;
+    });
+    const anchorDate = maxTime > 0 ? new Date(maxTime) : new Date();
+    const cutoffDate = new Date(anchorDate);
     cutoffDate.setDate(cutoffDate.getDate() - days);
-    const matchesTime = !r.review_date || new Date(r.review_date) >= cutoffDate;
+    const matchesTime = !r.review_date || parseDate(r.review_date) >= cutoffDate;
 
     const matchesSearch = !searchQuery || 
       r.review_text?.toLowerCase().includes(searchQuery.toLowerCase()) || 
