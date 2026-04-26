@@ -142,21 +142,21 @@ function ReviewsContent() {
     let promoters = 0, detractors = 0;
 
     platformFiltered.forEach(r => {
-      dist[r.rating] = (dist[r.rating] || 0) + 1;
+      const rating = parseInt(r.rating) || 3;
+      dist[rating] = (dist[rating] || 0) + 1;
       
-      // Smart Sentiment Fallback (Browser-Side Triage)
-      let s = r.sentiment?.charAt(0).toUpperCase() + r.sentiment?.slice(1).toLowerCase();
-      if (!s || s === 'Undefined' || s === 'N/a') {
-         const rating = parseInt(r.rating);
-         if (rating >= 4) s = 'Positive';
-         else if (rating <= 2) s = 'Negative';
-         else s = 'Neutral';
-      }
+      // Bulletproof Triage
+      let s = "Neutral";
+      const rawSent = String(r.sentiment || "").toLowerCase();
+      
+      if (rawSent.includes("pos") || rating >= 4) s = "Positive";
+      else if (rawSent.includes("neg") || rating <= 2) s = "Negative";
+      else s = "Neutral";
 
       if (sent.hasOwnProperty(s)) sent[s]++;
       
-      if (r.rating >= 4) promoters++;
-      if (r.rating <= 2) detractors++;
+      if (rating >= 4) promoters++;
+      if (rating <= 2) detractors++;
     });
 
     return {
@@ -169,14 +169,12 @@ function ReviewsContent() {
   })();
 
   const filteredReviews = reviews.filter(r => {
-    // 1. Sentiment Filter (Case-Insensitive with Triage Fallback)
-    let effectiveSentiment = r.sentiment?.toLowerCase();
-    if (!effectiveSentiment || effectiveSentiment === 'undefined') {
-       const rating = parseInt(r.rating);
-       if (rating >= 4) effectiveSentiment = 'positive';
-       else if (rating <= 2) effectiveSentiment = 'negative';
-       else effectiveSentiment = 'neutral';
-    }
+    // 1. Sentiment Filter (Bulletproof Triage)
+    const rating = parseInt(r.rating) || 3;
+    const rawSent = String(r.sentiment || "").toLowerCase();
+    let effectiveSentiment = "neutral";
+    if (rawSent.includes("pos") || rating >= 4) effectiveSentiment = "positive";
+    else if (rawSent.includes("neg") || rating <= 2) effectiveSentiment = "negative";
 
     const matchesSentiment = sentimentTab === 'All' || 
       effectiveSentiment === sentimentTab.toLowerCase();

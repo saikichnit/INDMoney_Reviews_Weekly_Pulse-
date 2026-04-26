@@ -35,14 +35,11 @@ export default function UnifiedIntelligencePage() {
       const avgRating = (timeFiltered.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1);
       
       const getEffectiveSentiment = (r) => {
-        let s = r.sentiment?.toLowerCase();
-        if (!s || s === 'undefined' || s === 'n/a') {
-          const rating = parseInt(r.rating);
-          if (rating >= 4) return 'positive';
-          if (rating <= 2) return 'negative';
-          return 'neutral';
-        }
-        return s;
+        const rating = parseInt(r.rating) || 3;
+        const rawSent = String(r.sentiment || "").toLowerCase();
+        if (rawSent.includes("pos") || rating >= 4) return 'positive';
+        if (rawSent.includes("neg") || rating <= 2) return 'negative';
+        return 'neutral';
       };
 
       const posCount = timeFiltered.filter(r => getEffectiveSentiment(r) === 'positive').length;
