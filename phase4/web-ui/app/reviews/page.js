@@ -133,7 +133,21 @@ function ReviewsContent() {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
-    const timeFiltered = reviews.filter(r => !r.review_date || new Date(r.review_date) >= cutoffDate);
+    const parseDate = (d) => {
+      if (!d) return new Date(0);
+      const parts = d.split('/');
+      if (parts.length === 3) {
+         // Handle MM/DD/YYYY or DD/MM/YYYY
+         return new Date(parts[2], parts[0] - 1, parts[1]);
+      }
+      return new Date(d);
+    };
+
+    const timeFiltered = reviews.filter(r => {
+      const rd = parseDate(r.review_date);
+      return rd >= cutoffDate;
+    });
+
     const platformFiltered = timeFiltered.filter(r => platform === 'all' || r.platform?.toLowerCase() === platform.toLowerCase());
 
     const total = platformFiltered.length || 1;
@@ -164,7 +178,11 @@ function ReviewsContent() {
       avg_rating: (platformFiltered.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1),
       rating_distribution: dist,
       sentiment_split: sent,
-      health_breakdown: { promoters, detractors }
+      health_breakdown: { promoters, detractors },
+      platform_counts: {
+        android: timeFiltered.filter(r => r.platform?.toLowerCase() === 'android').length,
+        ios: timeFiltered.filter(r => r.platform?.toLowerCase() === 'ios').length
+      }
     };
   })();
 
@@ -226,7 +244,7 @@ function ReviewsContent() {
         
         <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
           {['all', 'android', 'ios'].map(p => {
-            const count = p === 'all' ? reactiveMetrics.total_reviews : reviews.filter(r => r.platform?.toLowerCase() === p).length;
+            const count = p === 'all' ? reactiveMetrics.total_reviews : (reactiveMetrics.platform_counts[p] || 0);
             return (
               <button
                 key={p}
