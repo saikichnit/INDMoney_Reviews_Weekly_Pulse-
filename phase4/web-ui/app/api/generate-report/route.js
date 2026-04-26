@@ -22,7 +22,28 @@ export async function POST(request) {
     }
 
     try {
-      // 1. Check for existing in-progress actions to prevent duplicates
+      // 1. ROOT CAUSE FIX: Check if a fresh report for this window already exists (Cache for 1 hour)
+      // This makes the response INSTANT (5-10s) instead of 80s.
+      const ARCHIVE_URL = `https://raw.githubusercontent.com/${githubRepo}/main/data/reports_archive.json?t=${Date.now()}`;
+      const archiveRes = await fetch(ARCHIVE_URL, { cache: 'no-store' });
+      const reports = await archiveRes.json();
+      
+      if (Array.isArray(reports) && reports.length > 0) {
+        const latest = reports[0];
+        const createdAt = new Date(latest.created_at);
+        const ageInMinutes = (new Date() - createdAt) / 60000;
+        
+        // If we have a report for this window that is less than 60 mins old, return it INSTANTLY
+        if (ageInMinutes < 60) {
+          return NextResponse.json({ 
+            report_id: latest.id, 
+            status: "success", 
+            message: "Retrieved fresh report from intelligence cache." 
+          });
+        }
+      }
+
+      // 2. CONCURRENCY GUARD: Check for existing in-progress actions
       const actionsRes = await fetch(`https://api.github.com/repos/${githubRepo}/actions/runs?status=in_progress`, {
         headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' }
       });
@@ -32,12 +53,12 @@ export async function POST(request) {
       if (inProgress && inProgress.length > 0) {
         return NextResponse.json({ 
           status: "started", 
-          message: "An analysis is ALREADY running. Please wait for it to finish.",
+          message: "An analysis is ALREADY running in the cloud. We will auto-redirect as soon as it's done.",
           remote: true 
         });
       }
 
-      // 2. Trigger new action
+      // 3. TRIGGER CLOUD WORKER: If no cache and no active run
       const res = await fetch(`https://api.github.com/repos/${githubRepo}/actions/workflows/scheduler.yml/dispatches`, {
         method: 'POST',
         headers: {

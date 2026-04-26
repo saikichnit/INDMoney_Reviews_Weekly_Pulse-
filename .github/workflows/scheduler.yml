@@ -2,8 +2,8 @@ name: Weekly Review Pulse Scheduler
 
 on:
   schedule:
-    # 3:35 PM IST is 10:05 AM UTC (IST = UTC + 5:30)
-    - cron: '05 10 * * 1'
+    # Proactive Intelligence: Run every hour to keep the synthesis "Warm" for instant UI loads
+    - cron: '0 * * * *'
   workflow_dispatch:
     inputs:
       max_reviews:
