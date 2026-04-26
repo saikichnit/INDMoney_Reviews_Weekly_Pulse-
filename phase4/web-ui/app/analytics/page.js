@@ -128,15 +128,15 @@ export default function UnifiedIntelligencePage() {
         </div>
         
         <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-          {['7d', '14d', '30d', '90d', '180d', '240d', '360d'].map(t => (
-            <button
-              key={t}
-              onClick={() => setTimeRange(t)}
-              className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all ${timeRange === t ? 'bg-white text-[#0066CC] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              {t}
-            </button>
-          ))}
+              {['7d', '14d', '30d', '90d', '180d', '240d', '360d'].map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTimeRange(t)}
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${timeRange === t ? 'bg-white text-[#0066CC] shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-700'}`}
+                >
+                  Last {t.toUpperCase()}
+                </button>
+              ))}
         </div>
       </div>
 

@@ -271,7 +271,7 @@ function ReviewsContent() {
                 onClick={() => setTimeRange(t)}
                 className={`px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${timeRange === t ? 'bg-white text-[#0066CC] shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-700'}`}
               >
-                {t}
+                Last {t.toUpperCase()}
               </button>
             ))}
           </div>
