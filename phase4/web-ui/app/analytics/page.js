@@ -93,10 +93,12 @@ export default function UnifiedIntelligencePage() {
       const catMap = {};
       timeFiltered.forEach(r => {
         const cat = r.category && r.category !== 'null' && r.category !== 'undefined' ? r.category : classifyLocally(r.review_text, r.rating);
-        if (!catMap[cat]) catMap[cat] = { count: 0, rating: 0, pos: 0 };
+        if (!catMap[cat]) catMap[cat] = { count: 0, rating: 0, pos: 0, neg: 0 };
         catMap[cat].count++;
         catMap[cat].rating += r.rating;
-        if (getEffectiveSentiment(r) === 'positive') catMap[cat].pos++;
+        const s = getEffectiveSentiment(r);
+        if (s === 'positive') catMap[cat].pos++;
+        if (s === 'negative') catMap[cat].neg++;
       });
 
       const transformedData = {
