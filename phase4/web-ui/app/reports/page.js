@@ -8,9 +8,10 @@ export default function ReportsAndAutomation() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
-  const [selectedMonths, setSelectedMonths] = useState(3)
+  const [selectedMonths, setSelectedMonths] = useState(10)
   const [isPolling, setIsPolling] = useState(false)
   const [pollCount, setPollCount] = useState(0)
+  const [startTime, setStartTime] = useState(null)
 
   useEffect(() => {
     fetchReports()
@@ -21,30 +22,29 @@ export default function ReportsAndAutomation() {
     if (isPolling) {
       interval = setInterval(() => {
         setPollCount(prev => prev + 1)
-        fetchReports()
+        fetchReports(true)
       }, 5000)
     }
     return () => clearInterval(interval)
   }, [isPolling])
 
   useEffect(() => {
-    // If we were polling and a new report appeared, stop polling
-    if (isPolling && reports.length > 0) {
-      // Check if the latest report is new (less than 3 mins old)
+    if (isPolling && reports.length > 0 && startTime) {
       const latest = reports[0]
-      const createdAt = new Date(latest.created_at)
-      if ((new Date() - createdAt) < 180000) {
+      const createdAt = new Date(latest.created_at).getTime()
+      // If the report was created after we clicked "Generate", it's the new one!
+      if (createdAt > startTime) {
         setIsPolling(false)
         router.push(`/report/${latest.id}`)
       }
     }
-  }, [reports])
+  }, [reports, isPolling, startTime])
 
-  const fetchReports = async () => {
-    // Keep loading state only for initial fetch
-    if (!isPolling) setLoading(true)
+  const fetchReports = async (bypassCache = false) => {
+    if (!isPolling && !bypassCache) setLoading(true)
     try {
-      const ARCHIVE_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json";
+      const cacheBuster = bypassCache ? `?t=${Date.now()}` : ''
+      const ARCHIVE_URL = `https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json${cacheBuster}`;
       const res = await fetch(ARCHIVE_URL, { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -60,6 +60,9 @@ export default function ReportsAndAutomation() {
   const handleGenerate = async () => {
     setGenerating(true)
     const days = selectedMonths * 30
+    const clickTime = Date.now()
+    setStartTime(clickTime)
+
     try {
       const res = await fetch(`/api/generate-report?days=${days}`, { method: 'POST' })
       const data = await res.json()
@@ -80,169 +83,210 @@ export default function ReportsAndAutomation() {
   }
 
   const getRangeLabel = (m) => {
-    if (m === 1) return 'Monthly Pulse'
-    if (m === 3) return 'Quarterly Strategy'
-    if (m === 6) return 'Semi-Annual Outlook'
-    if (m === 12) return 'Annual Executive Review'
-    return `${m}-Month Deep Dive`
+    return `TARGET: ${m}-MONTH DEEP DIVE`
+  }
+
+  const getAnalysisWindow = () => {
+    const now = new Date()
+    const start = new Date()
+    start.setMonth(now.getMonth() - selectedMonths)
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    const format = (d) => `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
+    return `${format(start).toUpperCase()} – ${format(now).toUpperCase()}`
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1115] text-white font-sans p-8">
-      {/* Premium Progress Overlay */}
-      {isPolling && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-          <div className="bg-[#1A1D23] border border-white/10 p-8 rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="flex flex-col items-center text-center">
-              <div className="relative mb-6">
-                <div className="w-20 h-20 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-emerald-500 font-bold">LLM</span>
-                </div>
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Synthesizing Strategic Pulse</h2>
-              <p className="text-gray-400 mb-8">Analysis running in secure cloud container...</p>
-              
-              <div className="w-full space-y-4">
-                {[
-                  { label: "📡 Signal Ingestion", active: pollCount >= 0 },
-                  { label: "🧠 Deep Theme Extraction", active: pollCount >= 2 },
-                  { label: "🎓 Strategic Synthesis", active: pollCount >= 5 },
-                  { label: "📄 Finalizing Report", active: pollCount >= 8 }
-                ].map((step, i) => (
-                  <div key={i} className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${step.active ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-gray-700'}`}></div>
-                    <span className={step.active ? 'text-white' : 'text-gray-600'}>{step.label}</span>
-                    {step.active && pollCount >= i*3 && pollCount < (i+1)*3 && (
-                      <span className="text-[10px] text-emerald-500 animate-pulse ml-auto">PROCESSING...</span>
-                    )}
-                    {step.active && pollCount >= (i+1)*3 && (
-                      <span className="text-[10px] text-emerald-500 ml-auto">DONE</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-8 text-xs text-gray-500">
-                Polling Cloud Status: {pollCount * 5}s elapsed
-              </div>
+    <div className="min-h-screen bg-white text-slate-900 font-sans">
+      {/* Top Navigation Bar */}
+      <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100">
+        <div className="flex items-center space-x-12">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-[#0066CC] rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">I</span>
+            </div>
+            <span className="text-xl font-bold text-gray-400">Pulse</span>
+          </div>
+          <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-500">
+            <Link href="/" className="hover:text-[#0066CC] transition-colors">INDMoney Insights</Link>
+            <Link href="/categories" className="hover:text-[#0066CC] transition-colors">Categories</Link>
+            <div className="flex items-center space-x-1">
+              <Link href="/reports" className="text-slate-900 font-semibold underline decoration-2 underline-offset-8">INDPlus</Link>
+              <span className="text-[10px] bg-blue-50 text-[#0066CC] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter border border-blue-100">MCP</span>
             </div>
           </div>
         </div>
-      )}
+        <div className="flex items-center space-x-4">
+          <span className="bg-[#E7F7F1] text-[#22C55E] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-[#D1F2E5]">Production</span>
+          <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">SK</div>
+        </div>
+      </nav>
 
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-12 flex justify-between items-end">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
-              INDPlus Archive
-            </h1>
-            <p className="text-gray-400 text-lg">Historical Decisions & Signal Records</p>
-          </div>
-          
-          <div className="bg-[#1A1D23] p-4 rounded-xl border border-white/10 flex items-center space-x-6">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Rolling Window</span>
-              <select 
-                value={selectedMonths} 
-                onChange={(e) => setSelectedMonths(parseInt(e.target.value))}
-                className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-medium"
-              >
-                <option value={1}>Last 30 Days</option>
-                <option value={3}>Last 90 Days</option>
-                <option value={6}>Last 6 Months</option>
-                <option value={12}>Last 1 Year</option>
-              </select>
+      <main className="max-w-7xl mx-auto px-8 py-16">
+        {/* Intelligence Console Section */}
+        <div className="flex flex-col lg:flex-row justify-between items-start gap-20 mb-24">
+          <div className="max-w-2xl">
+            <div className="flex items-center space-x-3 mb-4">
+              <span className="text-[10px] font-bold text-[#0066CC] uppercase tracking-widest">INDPLUS INTELLIGENCE</span>
+              <span className="text-gray-300 text-xs">|</span>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">MODEL CONTEXT PROTOCOL</span>
             </div>
-            <button 
-              onClick={handleGenerate}
-              disabled={generating || isPolling}
-              className={`px-6 py-3 rounded-lg font-bold transition-all flex items-center space-x-2 ${
-                generating || isPolling
-                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 active:scale-95'
-              }`}
-            >
-              <span>✨ {generating ? 'Initializing...' : 'Generate INDPlus Note'}</span>
-            </button>
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-4">
-            {loading && !isPolling ? (
-              <div className="py-20 flex flex-col items-center justify-center border border-white/5 rounded-2xl bg-white/[0.02]">
-                <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-500">Syncing Intelligence Vault...</p>
-              </div>
-            ) : reports.length > 0 ? (
-              reports.map((report) => (
-                <div key={report.id} className="group bg-[#1A1D23] border border-white/5 p-6 rounded-2xl hover:border-white/20 transition-all cursor-pointer relative overflow-hidden" onClick={() => router.push(`/report/${report.id}`)}>
-                  <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded-full border border-emerald-500/20">VIEW INSIGHTS</span>
-                  </div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold mb-1">Weekly Pulse #{report.id}</h3>
-                      <p className="text-gray-500 text-sm">
-                        Generated {new Date(report.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-black text-white">{report.review_count}</div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-widest">Signals</div>
-                    </div>
-                  </div>
-                  <div className="text-gray-400 text-sm line-clamp-2 italic border-l-2 border-emerald-500/30 pl-4 py-1">
-                    "{report.summary || 'No summary available for this report.'}"
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-2xl">
-                <p className="text-gray-500">No reports in the intelligence archive.</p>
-                <button onClick={handleGenerate} className="mt-4 text-emerald-500 hover:underline">Trigger first report</button>
-              </div>
-            )}
+            <h1 className="text-4xl font-bold text-slate-900 mb-6 tracking-tight">Strategic Intelligence Console</h1>
+            <p className="text-lg text-slate-500 leading-relaxed max-w-xl">
+              Select your strategic window from 1 to 12 months. The AI will synthesize thousands of signals into a one-page executive note, automatically syncing to Google Workspace and drafting leadership reports.
+            </p>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-[#1A1D23] border border-white/5 p-8 rounded-2xl">
-              <h2 className="text-xl font-bold mb-4 flex items-center">
-                <span className="w-8 h-8 bg-emerald-500/10 text-emerald-500 rounded-lg flex items-center justify-center mr-3 text-sm">🎓</span>
-                Proactive Intelligence
-              </h2>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                Our AI actively monitors App Store & Play Store signals to proactively detect fee-related friction before it impacts NPS.
-              </p>
-              <div className="space-y-4">
-                <div className="p-4 bg-white/[0.02] rounded-xl border border-white/5">
-                  <div className="text-xs text-gray-500 uppercase mb-1">Status</div>
-                  <div className="flex items-center text-emerald-500 font-bold">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
-                    Synced to GitHub
-                  </div>
+          <div className="w-full lg:w-96 bg-white space-y-10 pt-4">
+            <div className="space-y-6">
+              <div className="flex justify-between items-end">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">TIME WINDOW</span>
+                  <span className="text-[10px] font-bold text-[#0066CC] uppercase tracking-widest">{getAnalysisWindow()}</span>
                 </div>
-                <div className="p-4 bg-white/[0.02] rounded-xl border border-white/5">
-                  <div className="text-xs text-gray-500 uppercase mb-1">Last Sync</div>
-                  <div className="text-white font-medium">{reports.length > 0 ? new Date(reports[0].created_at).toLocaleTimeString() : 'N/A'}</div>
+                <div className="text-3xl font-bold text-[#0066CC]">{selectedMonths} Months</div>
+              </div>
+              <div className="relative">
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="12" 
+                  value={selectedMonths}
+                  onChange={(e) => setSelectedMonths(parseInt(e.target.value))}
+                  className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#0066CC]"
+                />
+                <div className="flex justify-between mt-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">
+                  <span>1 MONTH</span>
+                  <span>6 MONTHS</span>
+                  <span>12 MONTHS</span>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-gradient-to-br from-emerald-600 to-emerald-900 p-8 rounded-2xl shadow-xl shadow-emerald-900/20">
-              <h3 className="text-xl font-bold mb-2">Live Support</h3>
-              <p className="text-white/80 text-sm mb-6">Need a custom deep-dive report for the board? Trigger a 12-month pulse.</p>
+
+            <div className="space-y-4">
+              <div className="bg-[#F4F9FF] py-2 text-center rounded-md border border-[#E1EEFF]">
+                <span className="text-[10px] font-bold text-[#0066CC] tracking-widest uppercase">{getRangeLabel(selectedMonths)}</span>
+              </div>
               <button 
-                onClick={() => { setSelectedMonths(12); handleGenerate(); }}
-                className="w-full py-3 bg-white text-emerald-900 rounded-xl font-bold hover:bg-gray-100 transition-colors"
+                onClick={handleGenerate}
+                disabled={generating || isPolling}
+                className={`w-full py-5 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all ${
+                  generating || isPolling 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
+                  : 'bg-[#0066CC] hover:bg-[#0052A3] text-white shadow-xl shadow-blue-200 active:scale-95'
+                }`}
               >
-                Board Synthesis (1Y)
+                <span>{generating || isPolling ? 'Processing...' : '✨ Generate INDPlus Note'}</span>
               </button>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Progress Overlay (Clean & White Theme) */}
+        {isPolling && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm">
+            <div className="max-w-md w-full text-center">
+              <div className="mb-10 inline-block relative">
+                <div className="w-24 h-24 border-4 border-gray-50 border-t-[#0066CC] rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[#0066CC] font-bold text-xl">MCP</span>
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Synthesizing Strategic Pulse</h2>
+              <p className="text-slate-400 mb-12">Analysis running in secure cloud container...</p>
+              
+              <div className="space-y-5 text-left max-w-xs mx-auto">
+                {[
+                  { label: "Signal Ingestion", active: pollCount >= 0 },
+                  { label: "Deep Theme Extraction", active: pollCount >= 3 },
+                  { label: "Strategic Synthesis", active: pollCount >= 7 },
+                  { label: "Finalizing Report", active: pollCount >= 10 }
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-1.5 h-1.5 rounded-full ${step.active ? 'bg-[#0066CC]' : 'bg-gray-200'}`}></div>
+                      <span className={`text-sm font-bold uppercase tracking-widest ${step.active ? 'text-slate-800' : 'text-gray-300'}`}>{step.label}</span>
+                    </div>
+                    {step.active && (
+                      <span className="text-[10px] font-black text-[#0066CC] tracking-tighter">
+                        {pollCount >= (i+1)*3.5 ? 'DONE' : 'PENDING...'}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-16 text-gray-300 text-[10px] font-bold uppercase tracking-widest">
+                ELAPSED TIME: {pollCount * 5} SECONDS
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Archive Section */}
+        <div>
+          <div className="flex items-center justify-between mb-8 border-b border-gray-100 pb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-1">INDPlus Archive</h2>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">HISTORICAL DECISIONS & SIGNAL RECORDS</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-[#22C55E] rounded-full"></div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Synced to MCP</span>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px] flex flex-col">
+            <div className="grid grid-cols-4 px-10 py-5 bg-gray-50/50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+              <span>GENERATION DATE</span>
+              <span>SIGNALS</span>
+              <span>STRATEGIC THEMES</span>
+              <span className="text-right">ACTIONS</span>
+            </div>
+            
+            <div className="flex-1 divide-y divide-gray-50">
+              {loading && !isPolling ? (
+                <div className="h-full flex items-center justify-center py-40">
+                  <div className="w-10 h-10 border-2 border-gray-100 border-t-[#0066CC] rounded-full animate-spin"></div>
+                </div>
+              ) : reports.length > 0 ? (
+                reports.map((report) => (
+                  <div key={report.id} className="grid grid-cols-4 px-10 py-8 items-center hover:bg-gray-50/30 transition-colors group">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-900 uppercase">
+                        {new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase mt-1">
+                        {new Date(report.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="bg-[#F4F9FF] text-[#0066CC] text-[11px] font-black px-3 py-1.5 rounded-lg border border-[#E1EEFF]">
+                        {report.review_count} SIGNALS
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(typeof report.themes === 'string' ? JSON.parse(report.themes) : report.themes).slice(0, 2).map((t, i) => (
+                        <span key={i} className="text-[10px] font-bold text-slate-500 uppercase px-2 py-1 bg-gray-100 rounded border border-gray-200">
+                          {typeof t === 'string' ? t : t.name}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="text-right">
+                      <Link href={`/report/${report.id}`} className="text-[10px] font-black text-[#0066CC] uppercase tracking-widest hover:underline flex items-center justify-end space-x-1">
+                        <span>VIEW INSIGHTS</span>
+                        <span className="text-sm">→</span>
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center py-32 text-gray-300">
+                  <p className="text-sm font-medium italic">No reports in the intelligence archive.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   )
 }
