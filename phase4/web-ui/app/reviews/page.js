@@ -72,7 +72,26 @@ function ReviewsContent() {
       };
       
       const fetchedReviews = json.reviews || [];
-      const reviewsWithIds = fetchedReviews.map((r, i) => ({ id: r.id || `local-${Date.now()}-${i}`, ...r }));
+      const makeId = (r, i) => {
+         const str = (r.user_name || "") + (r.review_date || "") + (r.platform || "");
+         let hash = 0;
+         for (let j = 0; j < str.length; j++) {
+            hash = ((hash << 5) - hash) + str.charCodeAt(j);
+            hash |= 0;
+         }
+         return `rev-${Math.abs(hash)}-${i}`;
+      };
+      
+      let savedAssignments = {};
+      if (typeof window !== 'undefined') {
+         savedAssignments = JSON.parse(localStorage.getItem('jira_assignments') || '{}');
+      }
+      
+      const reviewsWithIds = fetchedReviews.map((r, i) => {
+         const id = r.id || makeId(r, i);
+         const saved = savedAssignments[id] || {};
+         return { id, ...r, ...saved };
+      });
       setReviews(reviewsWithIds);
       
       setMetrics({
@@ -133,7 +152,15 @@ function ReviewsContent() {
       setToast({ message: `Assigned to ${pmName}`, subtext: `Ticket Created: ${simulatedJiraId}` })
       setTimeout(() => setToast(null), 3000)
       
-      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, assigned_to: pmName, jira_id: simulatedJiraId } : r))
+      setReviews(prev => {
+        const next = prev.map(r => r.id === reviewId ? { ...r, assigned_to: pmName, jira_id: simulatedJiraId } : r);
+        if (typeof window !== 'undefined') {
+          const saved = JSON.parse(localStorage.getItem('jira_assignments') || '{}');
+          saved[reviewId] = { assigned_to: pmName, jira_id: simulatedJiraId };
+          localStorage.setItem('jira_assignments', JSON.stringify(saved));
+        }
+        return next;
+      });
       
       // AUTO-CLOSE
       setSelectedReview(null)
