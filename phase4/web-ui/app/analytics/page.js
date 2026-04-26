@@ -34,9 +34,20 @@ export default function UnifiedIntelligencePage() {
       const total = timeFiltered.length || 1;
       const avgRating = (timeFiltered.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1);
       
-      const posCount = timeFiltered.filter(r => r.sentiment?.toLowerCase() === 'positive').length;
-      const negCount = timeFiltered.filter(r => r.sentiment?.toLowerCase() === 'negative').length;
-      const neuCount = timeFiltered.filter(r => r.sentiment?.toLowerCase() === 'neutral').length;
+      const getEffectiveSentiment = (r) => {
+        let s = r.sentiment?.toLowerCase();
+        if (!s || s === 'undefined' || s === 'n/a') {
+          const rating = parseInt(r.rating);
+          if (rating >= 4) return 'positive';
+          if (rating <= 2) return 'negative';
+          return 'neutral';
+        }
+        return s;
+      };
+
+      const posCount = timeFiltered.filter(r => getEffectiveSentiment(r) === 'positive').length;
+      const negCount = timeFiltered.filter(r => getEffectiveSentiment(r) === 'negative').length;
+      const neuCount = timeFiltered.filter(r => getEffectiveSentiment(r) === 'neutral').length;
 
       // Group by Category for Functional Categories
       const catMap = {};
@@ -44,7 +55,7 @@ export default function UnifiedIntelligencePage() {
         if (!catMap[r.category]) catMap[r.category] = { count: 0, rating: 0, pos: 0 };
         catMap[r.category].count++;
         catMap[r.category].rating += r.rating;
-        if (r.sentiment?.toLowerCase() === 'positive') catMap[r.category].pos++;
+        if (getEffectiveSentiment(r) === 'positive') catMap[r.category].pos++;
       });
 
       const transformedData = {

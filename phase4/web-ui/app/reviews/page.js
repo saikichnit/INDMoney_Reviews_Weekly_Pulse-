@@ -143,8 +143,16 @@ function ReviewsContent() {
 
     platformFiltered.forEach(r => {
       dist[r.rating] = (dist[r.rating] || 0) + 1;
-      // Normalize Sentiment (handle case-sensitivity)
-      const s = r.sentiment?.charAt(0).toUpperCase() + r.sentiment?.slice(1).toLowerCase();
+      
+      // Smart Sentiment Fallback (Browser-Side Triage)
+      let s = r.sentiment?.charAt(0).toUpperCase() + r.sentiment?.slice(1).toLowerCase();
+      if (!s || s === 'Undefined' || s === 'N/a') {
+         const rating = parseInt(r.rating);
+         if (rating >= 4) s = 'Positive';
+         else if (rating <= 2) s = 'Negative';
+         else s = 'Neutral';
+      }
+
       if (sent.hasOwnProperty(s)) sent[s]++;
       
       if (r.rating >= 4) promoters++;
@@ -161,9 +169,17 @@ function ReviewsContent() {
   })();
 
   const filteredReviews = reviews.filter(r => {
-    // 1. Sentiment Filter (Case-Insensitive)
+    // 1. Sentiment Filter (Case-Insensitive with Triage Fallback)
+    let effectiveSentiment = r.sentiment?.toLowerCase();
+    if (!effectiveSentiment || effectiveSentiment === 'undefined') {
+       const rating = parseInt(r.rating);
+       if (rating >= 4) effectiveSentiment = 'positive';
+       else if (rating <= 2) effectiveSentiment = 'negative';
+       else effectiveSentiment = 'neutral';
+    }
+
     const matchesSentiment = sentimentTab === 'All' || 
-      r.sentiment?.toLowerCase() === sentimentTab.toLowerCase();
+      effectiveSentiment === sentimentTab.toLowerCase();
     const matchesPlatform = platform === 'all' || r.platform?.toLowerCase() === platform.toLowerCase();
     const matchesCategory = !category || r.category === category;
     
