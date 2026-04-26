@@ -12,6 +12,10 @@ export default function UnifiedIntelligencePage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const navigateToReviews = (categoryName) => {
+    router.push(`/reviews?time_range=${timeRange}&category=${encodeURIComponent(categoryName)}#review-feed`);
+  };
+
   const fetchIntelligence = async () => {
     setLoading(true)
     try {
@@ -60,13 +64,26 @@ export default function UnifiedIntelligencePage() {
       const negCount = timeFiltered.filter(r => getEffectiveSentiment(r) === 'negative').length;
       const neuCount = timeFiltered.filter(r => getEffectiveSentiment(r) === 'neutral').length;
 
+      const classifyLocally = (text, rating) => {
+        const t = (text || "").toLowerCase();
+        if (t.match(/crash|close|stuck|freeze|not opening|broken|bug/)) return 'App Crash';
+        if (t.match(/slow|lag|loading|speed|fast|hang|performance/)) return 'Performance';
+        if (t.match(/support|customer care|help|respond|chat|ticket|service/)) return 'Customer Support';
+        if (t.match(/fee|charge|cost|brokerage|money|deduct|hidden/)) return 'Charges & Fees';
+        if (t.match(/login|account|kyc|otp|access|delete|verify|security/)) return 'Account & KYC';
+        if (t.match(/ui|ux|design|interface|look|confusing|hard/)) return 'Ease of Use';
+        if (t.match(/add|wish|want|please|missing|feature/)) return 'Feature Request';
+        return parseInt(rating) >= 4 ? 'General Praise' : 'General Feedback';
+      };
+
       // Group by Category for Functional Categories
       const catMap = {};
       timeFiltered.forEach(r => {
-        if (!catMap[r.category]) catMap[r.category] = { count: 0, rating: 0, pos: 0 };
-        catMap[r.category].count++;
-        catMap[r.category].rating += r.rating;
-        if (getEffectiveSentiment(r) === 'positive') catMap[r.category].pos++;
+        const cat = r.category && r.category !== 'null' && r.category !== 'undefined' ? r.category : classifyLocally(r.review_text, r.rating);
+        if (!catMap[cat]) catMap[cat] = { count: 0, rating: 0, pos: 0 };
+        catMap[cat].count++;
+        catMap[cat].rating += r.rating;
+        if (getEffectiveSentiment(r) === 'positive') catMap[cat].pos++;
       });
 
       const transformedData = {

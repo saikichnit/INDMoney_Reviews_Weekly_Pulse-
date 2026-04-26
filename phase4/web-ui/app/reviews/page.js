@@ -243,7 +243,20 @@ function ReviewsContent() {
     const matchesSentiment = sentimentTab === 'All' || 
       effectiveSentiment === sentimentTab.toLowerCase();
     const matchesPlatform = platform === 'all' || r.platform?.toLowerCase() === platform.toLowerCase();
-    const matchesCategory = !category || r.category === category;
+    const classifyLocally = (text, rating) => {
+      const t = (text || "").toLowerCase();
+      if (t.match(/crash|close|stuck|freeze|not opening|broken|bug/)) return 'App Crash';
+      if (t.match(/slow|lag|loading|speed|fast|hang|performance/)) return 'Performance';
+      if (t.match(/support|customer care|help|respond|chat|ticket|service/)) return 'Customer Support';
+      if (t.match(/fee|charge|cost|brokerage|money|deduct|hidden/)) return 'Charges & Fees';
+      if (t.match(/login|account|kyc|otp|access|delete|verify|security/)) return 'Account & KYC';
+      if (t.match(/ui|ux|design|interface|look|confusing|hard/)) return 'Ease of Use';
+      if (t.match(/add|wish|want|please|missing|feature/)) return 'Feature Request';
+      return parseInt(rating) >= 4 ? 'General Praise' : 'General Feedback';
+    };
+
+    const effectiveCategory = r.category && r.category !== 'null' && r.category !== 'undefined' ? r.category : classifyLocally(r.review_text, r.rating);
+    const matchesCategory = !category || effectiveCategory === category;
     
     // Time filtering logic
     const days = parseInt(timeRange) || 30;
@@ -488,7 +501,21 @@ function ReviewCard({ r, onClick }) {
           )}
           <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">v{r.app_version || 'N/A'}</span>
           <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-[#0066CC] border border-blue-100 rounded-full uppercase tracking-wider">
-            #{r.category}
+            #{(() => {
+              const t = (r.review_text || "").toLowerCase();
+              let c = r.category && r.category !== 'null' && r.category !== 'undefined' ? r.category : null;
+              if (!c) {
+                if (t.match(/crash|close|stuck|freeze|not opening|broken|bug/)) c = 'App Crash';
+                else if (t.match(/slow|lag|loading|speed|fast|hang|performance/)) c = 'Performance';
+                else if (t.match(/support|customer care|help|respond|chat|ticket|service/)) c = 'Customer Support';
+                else if (t.match(/fee|charge|cost|brokerage|money|deduct|hidden/)) c = 'Charges & Fees';
+                else if (t.match(/login|account|kyc|otp|access|delete|verify|security/)) c = 'Account & KYC';
+                else if (t.match(/ui|ux|design|interface|look|confusing|hard/)) c = 'Ease of Use';
+                else if (t.match(/add|wish|want|please|missing|feature/)) c = 'Feature Request';
+                else c = parseInt(r.rating) >= 4 ? 'General Praise' : 'General Feedback';
+              }
+              return c;
+            })()}
           </span>
         </div>
         
