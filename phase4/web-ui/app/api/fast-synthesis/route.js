@@ -72,30 +72,40 @@ export async function POST(request) {
     } catch (err) {
         console.error("Groq Failed, trying Gemini Fallback:", err.message);
         
-        // B. Try Gemini (Fallback with Discovery)
+        // B. Try Gemini (Fallback with Discovery & Retry)
         if (geminiKey) {
-            try {
-                // Use the 'Lite' model for much higher free-tier quota limits
-                let modelName = "gemini-2.0-flash-lite";
-                let geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
-                let geminiRes = await fetch(geminiUrl, {
+            let retryCount = 0;
+            const maxRetries = 1;
+            
+            async function tryGemini(model) {
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+                const res = await fetch(geminiUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt + "\nIMPORTANT: Return ONLY raw JSON." }] }]
                     })
                 });
+                return res;
+            }
+
+            try {
+                let modelName = "gemini-2.0-flash-lite";
+                let geminiRes = await tryGemini(modelName);
+
+                // Auto-Retry Logic for 429 (Quota) or 404 (Name Change)
+                if (!geminiRes.ok && retryCount < maxRetries) {
+                    const status = geminiRes.status;
+                    if (status === 429 || status === 404) {
+                        console.log(`Gemini ${status}, retrying with 1.5-flash in 2s...`);
+                        await new Promise(r => setTimeout(r, 2000));
+                        retryCount++;
+                        geminiRes = await tryGemini("gemini-1.5-flash");
+                    }
+                }
 
                 if (!geminiRes.ok) {
                     const errStatus = geminiRes.status;
-                    if (errStatus === 404) {
-                        // AUTO-DISCOVERY: If 404, ask the API what models we ARE allowed to use
-                        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`;
-                        const listRes = await fetch(listUrl);
-                        const listData = await listRes.json();
-                        const availableModels = listData.models?.map(m => m.name) || [];
-                        throw new Error(`Model ${modelName} not found. Available models for your key: ${availableModels.join(', ')}`);
-                    }
                     const errText = await geminiRes.text();
                     throw new Error(`Gemini Error (${errStatus}): ${errText}`);
                 }
@@ -109,7 +119,7 @@ export async function POST(request) {
                 
                 synthesis = JSON.parse(text);
             } catch (geminiErr) {
-                console.error("Gemini Discovery Failed:", geminiErr);
+                console.error("Gemini Final Failure:", geminiErr);
                 throw new Error(`Both Groq and Gemini failed. ${geminiErr.message}`);
             }
         } else {
