@@ -68,18 +68,34 @@ export async function POST(request) {
     } catch (err) {
         console.error("Groq Failed, trying Gemini Fallback:", err.message);
         
-        // B. Try Gemini (REST v1beta - Best for Flash)
+        // B. Try Gemini (Fallback with Discovery)
         if (geminiKey) {
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-            const geminiRes = await fetch(geminiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt + "\nIMPORTANT: Return ONLY raw JSON." }] }]
-                })
-            });
+            try {
+                // First try Flash
+                let modelName = "gemini-1.5-flash";
+                let geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
+                let geminiRes = await fetch(geminiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt + "\nIMPORTANT: Return ONLY raw JSON." }] }]
+                    })
+                });
 
-            if (geminiRes.ok) {
+                if (!geminiRes.ok) {
+                    const errStatus = geminiRes.status;
+                    if (errStatus === 404) {
+                        // AUTO-DISCOVERY: If 404, ask the API what models we ARE allowed to use
+                        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`;
+                        const listRes = await fetch(listUrl);
+                        const listData = await listRes.json();
+                        const availableModels = listData.models?.map(m => m.name) || [];
+                        throw new Error(`Model ${modelName} not found. Available models for your key: ${availableModels.join(', ')}`);
+                    }
+                    const errText = await geminiRes.text();
+                    throw new Error(`Gemini Error (${errStatus}): ${errText}`);
+                }
+
                 const geminiData = await geminiRes.json();
                 let text = geminiData.candidates[0].content.parts[0].text;
                 
@@ -88,9 +104,9 @@ export async function POST(request) {
                 else if (text.includes("```")) text = text.split("```")[1].split("```")[0].trim();
                 
                 synthesis = JSON.parse(text);
-            } else {
-                const errText = await geminiRes.text();
-                throw new Error(`Both Groq and Gemini failed. Gemini v1 Error: ${errText}`);
+            } catch (geminiErr) {
+                console.error("Gemini Discovery Failed:", geminiErr);
+                throw new Error(`Both Groq and Gemini failed. ${geminiErr.message}`);
             }
         } else {
             throw err;
