@@ -24,6 +24,23 @@ export default function ReportPreview() {
   useEffect(() => {
     const fetchReport = async () => {
       setLoading(true)
+      
+      const searchParams = new URLSearchParams(window.location.search)
+      if (searchParams.get('transient') === 'true') {
+        const transientData = localStorage.getItem('transient_report')
+        if (transientData) {
+          try {
+            const data = JSON.parse(transientData)
+            setReport(data)
+            setEditedSummary(data.summary || '')
+            setLoading(false)
+            return
+          } catch (e) {
+            console.error("Failed to parse transient report", e)
+          }
+        }
+      }
+
       try {
         // 1. Try local API first
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports/${id}`)

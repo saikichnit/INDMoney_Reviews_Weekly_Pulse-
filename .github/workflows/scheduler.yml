@@ -3,15 +3,16 @@ name: Weekly Review Pulse Scheduler
 on:
   schedule:
     # Proactive Intelligence: Run every hour to keep the synthesis "Warm" for instant UI loads
+  # Proactive Intelligence: Run every hour to keep the synthesis "Warm" for instant UI loads
     - cron: '0 * * * *'
   workflow_dispatch:
     inputs:
       max_reviews:
         description: 'Max reviews to process'
-        default: '1000'
+        default: '5000'
       weeks:
         description: 'Time window in weeks'
-        default: '8'
+        default: '52'
 permissions:
   contents: write
 

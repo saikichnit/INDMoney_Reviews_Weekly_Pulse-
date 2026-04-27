@@ -78,20 +78,29 @@ export default function ReportsAndAutomation() {
   const handleGenerate = async () => {
     setGenerating(true)
     try {
-      // [REMOVED] Immediate redirect to old report. Users want to see the progress of the NEW one.
       const days = selectedMonths * 30
-      const res = await fetch(`/api/generate-report?days=${days}&max_reviews=${maxReviews}`, { method: 'POST' })
+      // [PROD FIX] Using Fast Path Edge Synthesis (5-10s target)
+      const res = await fetch(`/api/fast-synthesis?days=${days}&max_reviews=${maxReviews}`, { method: 'POST' })
       const data = await res.json()
       
-      if (data.report_id) {
-        window.location.href = `/report/${data.report_id}?months=${selectedMonths}`
-      } else if (data.status === "started") {
-        setRunId(data.run_id)
-        setIsPolling(true)
-        setPollCount(0)
+      if (data.summary) {
+        // Save transient report for instant viewing while GitHub persistence runs in background
+        localStorage.setItem('transient_report', JSON.stringify(data))
+        window.location.href = `/report/latest?transient=true`
+      } else {
+        // Fallback to slow path if fast path fails
+        const slowRes = await fetch(`/api/generate-report?days=${days}&max_reviews=${maxReviews}`, { method: 'POST' })
+        const slowData = await slowRes.json()
+        if (slowData.run_id) {
+          setRunId(slowData.run_id)
+          setIsPolling(true)
+        }
       }
-    } catch (err) { console.error(err) }
-    setGenerating(false)
+    } catch (err) { 
+      console.error(err)
+      // Final fallback
+      setGenerating(false)
+    }
   }
 
   return (
