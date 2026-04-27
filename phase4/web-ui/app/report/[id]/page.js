@@ -382,36 +382,7 @@ export default function ReportPreview() {
                     </div>
                  </div>
 
-                 <div className="space-y-4">
-                    <div className="relative">
-                       <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-slate-100"></div>
-                       </div>
-                       <div className="relative flex justify-center text-[8px] font-bold uppercase tracking-widest text-slate-300">
-                          <span className="bg-white px-2">Or Complete</span>
-                       </div>
-                    </div>
 
-                    <button 
-                      onClick={() => handleApprove('both')}
-                      disabled={approving !== null}
-                      className={`w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-emerald-100 transition-all ${approving !== null ? 'opacity-70 scale-95' : 'hover:scale-[1.02] active:scale-95'}`}
-                    >
-                       {approving === 'both' ? (
-                         <>
-                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Processing...
-                         </>
-                       ) : (
-                         <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Do Both & Finish
-                         </>
-                       )}
-                    </button>
-                 </div>
 
                  <div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex gap-3">
                     <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
