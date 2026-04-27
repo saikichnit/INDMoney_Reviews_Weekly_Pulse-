@@ -68,10 +68,9 @@ export async function POST(request) {
     } catch (err) {
         console.error("Groq Failed, trying Gemini Fallback:", err.message);
         
-        // B. Try Gemini (REST v1 - Most Stable)
+        // B. Try Gemini (REST v1beta - Best for Flash)
         if (geminiKey) {
-            // Using v1 instead of v1beta for maximum stability
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiKey}`;
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
             const geminiRes = await fetch(geminiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
