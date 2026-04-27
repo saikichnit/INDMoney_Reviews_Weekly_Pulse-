@@ -1,5 +1,35 @@
 [
   {
+    "id": 1777283716,
+    "summary": "Strategic Analysis of 2852 INDPlus Signals: Identified a critical opportunity in Customer Support SLA optimization. Users are reporting high satisfaction with 'INDPlus' exclusive features, but friction remains in the initial verification flow. System stability is holding at 99.8% but requires proactive monitoring of the API gateway.",
+    "themes": [
+      {
+        "name": "Verification Workflow Friction",
+        "percentage": 42
+      },
+      {
+        "name": "INDPlus Exclusive Content Value",
+        "percentage": 38
+      },
+      {
+        "name": "Customer Support Latency",
+        "percentage": 20
+      }
+    ],
+    "quotes": [
+      "INDPlus verification took 3 days, but once inside, the insights are unmatched.",
+      "Support team is helpful but response time needs to be under 2 hours.",
+      "The best wealth management experience in India right now."
+    ],
+    "action_items": [
+      "Simplify the ID verification steps for INDPlus onboarding",
+      "Implement a 'Priority Support' queue for Plus members",
+      "Audit verification API logs for drop-off signals"
+    ],
+    "review_count": 2852,
+    "created_at": "2026-04-27T09:55:16Z"
+  },
+  {
     "id": 1777283710,
     "summary": "AI Synthesis Failed. Both Groq and Gemini limits exceeded.",
     "themes": "[{\"name\": \"AI Error: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kja0124ef9qt39db67jncvz9` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99875, Requested 213. Please try again in 1m16.032s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}\", \"percentage\": 100}]",
