@@ -34,7 +34,8 @@ export default function RootLayout({ children }) {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold rounded-full border border-green-200 dark:border-green-800 uppercase tracking-widest">
+              <div className="px-3 py-1 bg-slate-900 text-slate-300 text-[10px] font-bold rounded border border-slate-700 uppercase tracking-[0.15em] shadow-sm flex items-center gap-1.5">
+                <div className="w-1 h-1 bg-slate-400 rounded-full animate-pulse"></div>
                 Production
               </div>
               <button className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center">
