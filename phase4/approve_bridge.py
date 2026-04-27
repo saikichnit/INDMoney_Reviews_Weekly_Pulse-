@@ -15,7 +15,7 @@ from services.mcp_service.google_docs_helper import GoogleDocsHelper
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--id", required=True, type=int)
+    parser.add_argument("--id", required=True, type=str)
     parser.add_argument("--text", required=True)
     parser.add_argument("--email", required=True)
     parser.add_argument("--mode", choices=["email", "docs", "both"], default="both")
@@ -23,7 +23,17 @@ def main():
 
     # Database
     db = DatabaseManager()
-    report = db.get_report_by_id(args.id)
+    
+    # Handle "latest" alias
+    target_id = args.id
+    if target_id == "latest":
+        reports = db.get_all_reports()
+        report = reports[0] if reports else None
+    else:
+        try:
+            report = db.get_report_by_id(int(target_id))
+        except:
+            report = None
     
     # Fallback to JSON archive if DB lookup fails (e.g. on GitHub Actions)
     if not report:
@@ -32,7 +42,10 @@ def main():
             try:
                 with open(archive_path, 'r') as f:
                     archive = json.load(f)
-                    report = next((r for r in archive if r.get('id') == args.id), None)
+                    if target_id == "latest":
+                        report = archive[0] if archive else None
+                    else:
+                        report = next((r for r in archive if str(r.get('id')) == target_id), None)
                     if report:
                         # Ensure nested fields are parsed if they are strings
                         for field in ['themes', 'quotes', 'action_items', 'fee_scenarios']:

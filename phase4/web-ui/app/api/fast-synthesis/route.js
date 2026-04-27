@@ -56,33 +56,44 @@ export async function POST(request) {
     5. "sentiment_distribution": {positive, negative, neutral} percentages.
     `;
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' },
-    });
+    // Call Groq with Retry Logic
+    let response;
+    let retries = 3;
+    let delay = 2000;
 
-    const synthesis = JSON.parse(chatCompletion.choices[0].message.content);
+    for (let i = 0; i < retries; i++) {
+        try {
+            response = await groq.chat.completions.create({
+                messages: [{ role: "user", content: prompt }],
+                model: "llama-3.3-70b-versatile",
+                response_format: { type: "json_object" }
+            });
+            break; // Success
+        } catch (err) {
+            if ((err.status === 429 || err.message.includes("rate_limit")) && i < retries - 1) {
+                console.log(`Rate limit hit, retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+                continue;
+            }
+            throw err;
+        }
+    }
+
+    const synthesis = JSON.parse(response.choices[0].message.content);
 
     // 4. Persistence Dispatch (Async)
     // We trigger the GitHub Action in the background to save this report permanently
-    // But we don't wait for it!
-    fetch(`https://api.github.com/repos/${githubRepo}/actions/workflows/scheduler.yml/dispatches`, {
-        method: 'POST',
+    const repo = process.env.GITHUB_REPO || "saikichnit/INDMoney_Reviews_Weekly_Pulse-";
+    const githubToken = process.env.GITHUB_TOKEN;
+    
+    if (githubToken) {
+      await fetch(`https://api.github.com/repos/${repo}/actions/workflows/scheduler.yml/dispatches`, {
+        method: "POST",
         headers: {
-            'Authorization': `token ${githubToken}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
+          "Authorization": `Bearer ${githubToken}`,
+          "Accept": "application/vnd.github.v3+json",
         },
-        body: JSON.stringify({
-            ref: 'main',
-            inputs: {
-                max_reviews: maxReviews.toString(),
-                weeks: Math.ceil(days/7).toString()
-            }
-        })
-    }).catch(e => console.error("Persistence dispatch failed:", e));
-
     return NextResponse.json({
         id: Date.now(), // Temporary ID for instant UI redirect
         ...synthesis,

@@ -27,9 +27,20 @@ export default function ReportPreview() {
       
       const searchParams = new URLSearchParams(window.location.search)
       const isTransient = searchParams.get('transient') === 'true'
+      const isLocal = searchParams.get('local') === 'true'
       
       if (isTransient) {
-        const transientData = localStorage.getItem('transient_report')
+        let transientData = null;
+        
+        if (isLocal) {
+            // Find specific local report by ID
+            const localArchive = JSON.parse(localStorage.getItem('local_archive') || '[]');
+            transientData = JSON.stringify(localArchive.find(r => r.id === id));
+        } else {
+            // Default to the very latest
+            transientData = localStorage.getItem('transient_report');
+        }
+
         if (transientData) {
           try {
             const data = JSON.parse(transientData)

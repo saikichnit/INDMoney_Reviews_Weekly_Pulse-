@@ -1,6 +1,7 @@
 import os
-from groq import Groq
 import json
+from groq import Groq
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 class NoteService:
     def __init__(self, api_key: str = None):
@@ -8,6 +9,7 @@ class NoteService:
         self.client = Groq(api_key=self.api_key) if self.api_key else None
         self.model = "llama-3.3-70b-versatile"
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate_note(self, themes: list, reviews: list) -> dict:
         if not self.client: 
             return {
@@ -43,9 +45,11 @@ class NoteService:
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
+            if "rate_limit_exceeded" in str(e).lower() or "429" in str(e):
+                raise e # Trigger tenacity retry
             print(f"Note generation error: {e}")
             return {
-                "summary": f"AI Synthesis Failed. Error: {str(e)}. Please check your GROQ_API_KEY GitHub Secret or Rate Limits.",
+                "summary": f"AI Synthesis Failed. Error: {str(e)}.. Please check your GROQ_API_KEY GitHub Secret or Rate Limits.",
                 "quotes": [],
                 "action_items": []
             }

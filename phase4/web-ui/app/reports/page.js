@@ -84,8 +84,20 @@ export default function ReportsAndAutomation() {
       const data = await res.json()
       
       if (data.summary) {
-        // Save transient report for instant viewing while GitHub persistence runs in background
+        // 1. Save as transient for instant view
         localStorage.setItem('transient_report', JSON.stringify(data))
+        
+        // 2. Add to local archive list for the dashboard
+        const localData = localStorage.getItem('local_archive')
+        const localReports = localData ? JSON.parse(localData) : []
+        const newReport = {
+            ...data,
+            id: `local-${Date.now()}`,
+            created_at: new Date().toISOString(),
+            is_local: true
+        }
+        localStorage.setItem('local_archive', JSON.stringify([newReport, ...localReports]))
+
         window.location.href = `/report/latest?transient=true`
         return;
       } else {
@@ -210,7 +222,12 @@ export default function ReportsAndAutomation() {
                 <div className="py-40 flex items-center justify-center"><div className="w-10 h-10 border-2 border-t-[#0066CC] rounded-full animate-spin"></div></div>
               ) : reports.map((report) => (
                 <div key={report.id} className="grid grid-cols-4 px-10 py-8 items-center hover:bg-gray-50/30">
-                  <div className="text-sm font-bold text-slate-900 uppercase">{new Date(report.created_at).toLocaleDateString()}</div>
+                  <div className="flex flex-col">
+                    <div className="text-sm font-bold text-slate-900 uppercase">{new Date(report.created_at).toLocaleDateString()}</div>
+                    {report.is_local && (
+                      <span className="text-[9px] font-black text-white bg-[#0066CC] px-1.5 py-0.5 rounded w-fit mt-1">JUST NOW</span>
+                    )}
+                  </div>
                   <div><span className="bg-[#F4F9FF] text-[#0066CC] text-[11px] font-black px-3 py-1.5 rounded-lg">{report.review_count} SIGNALS</span></div>
                   <div className="flex gap-2">
                     {(typeof report.themes === 'string' ? JSON.parse(report.themes) : report.themes).slice(0, 2).map((t, i) => (
@@ -218,7 +235,12 @@ export default function ReportsAndAutomation() {
                     ))}
                   </div>
                   <div className="text-right">
-                    <Link href={`/report/${report.id}`} className="text-[10px] font-black text-[#0066CC] uppercase tracking-widest hover:underline">VIEW INSIGHTS →</Link>
+                    <Link 
+                      href={report.is_local ? `/report/${report.id}?transient=true&local=true` : `/report/${report.id}`} 
+                      className="text-[10px] font-black text-[#0066CC] uppercase tracking-widest hover:underline"
+                    >
+                      VIEW INSIGHTS →
+                    </Link>
                   </div>
                 </div>
               ))}
