@@ -1,7 +1,8 @@
 import os
 import time
+import json
+import requests
 from groq import Groq
-import google.generativeai as genai
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 class DiscoveryService:
@@ -10,10 +11,6 @@ class DiscoveryService:
         self.gemini_key = os.environ.get("GEMINI_API_KEY")
         self.client = Groq(api_key=self.api_key) if self.api_key else None
         self.model = "llama-3.3-70b-versatile"
-        
-        if self.gemini_key:
-            genai.configure(api_key=self.gemini_key)
-            self.gemini_model = genai.GenerativeModel('gemini-1.5-pro')
 
     @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, min=4, max=10))
     def discover_signals(self, reviews: list) -> list:
@@ -45,9 +42,18 @@ class DiscoveryService:
         # Fallback to Gemini
         if self.gemini_key:
             try:
-                response = self.gemini_model.generate_content(prompt)
-                signals = response.text.strip().split('\n')
-                return [s.strip('- ').strip() for s in signals if s.strip()]
+                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={self.gemini_key}"
+                payload = {
+                    "contents": [{"parts": [{"text": prompt}]}]
+                }
+                response = requests.post(url, json=payload)
+                if response.status_code == 200:
+                    data = response.json()
+                    text = data['candidates'][0]['content']['parts'][0]['text']
+                    signals = text.strip().split('\n')
+                    return [s.strip('- ').strip() for s in signals if s.strip()]
+                else:
+                    print(f"Gemini REST Failed: {response.text}")
             except Exception as e:
                 print(f"Gemini also failed: {e}")
         

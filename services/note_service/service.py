@@ -1,7 +1,7 @@
 import os
 import json
+import requests
 from groq import Groq
-import google.generativeai as genai
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 class NoteService:
@@ -10,10 +10,6 @@ class NoteService:
         self.gemini_key = os.environ.get("GEMINI_API_KEY")
         self.client = Groq(api_key=self.api_key) if self.api_key else None
         self.model = "llama-3.3-70b-versatile"
-
-        if self.gemini_key:
-            genai.configure(api_key=self.gemini_key)
-            self.gemini_model = genai.GenerativeModel('gemini-1.5-pro')
 
     @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate_note(self, themes: list, reviews: list) -> dict:
@@ -53,12 +49,24 @@ class NoteService:
         # Fallback to Gemini
         if self.gemini_key:
             try:
-                response = self.gemini_model.generate_content(prompt)
-                # Parse JSON from Gemini text (it might include markdown blocks)
-                text = response.text
-                if "```json" in text:
-                    text = text.split("```json")[1].split("```")[0].strip()
-                return json.loads(text)
+                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={self.gemini_key}"
+                payload = {
+                    "contents": [{"parts": [{"text": prompt}]}]
+                }
+                response = requests.post(url, json=payload)
+                if response.status_code == 200:
+                    data = response.json()
+                    text = data['candidates'][0]['content']['parts'][0]['text']
+                    
+                    # Parse JSON from Gemini text
+                    if "```json" in text:
+                        text = text.split("```json")[1].split("```")[0].strip()
+                    elif "```" in text:
+                        text = text.split("```")[1].split("```")[0].strip()
+                    
+                    return json.loads(text)
+                else:
+                    print(f"Gemini REST Note Failed: {response.text}")
             except Exception as e:
                 print(f"Gemini note generation failed: {e}")
 
