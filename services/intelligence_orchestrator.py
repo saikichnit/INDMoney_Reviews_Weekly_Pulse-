@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 
 # Layer 1-3 Services
-from services.ingestion_service.service import IngestionService
+from services.ingestion_service.real_ingestor import RealIngestor
 from services.preprocessing_service.service import PreprocessingService
 from services.discovery_service.service import DiscoveryService
 from services.classification_service.service import ClassificationService
@@ -27,9 +27,9 @@ class IntelligenceOrchestrator:
         os.makedirs(os.path.dirname(abs_db_path), exist_ok=True)
         
         self.db = DatabaseManager(abs_db_path)
-        self.db.init_db() # Ensure tables exist in fresh cloud environments
+        self.db._init_db() # Fixed method name
         
-        self.ingestor = IngestionService(self.db)
+        self.ingestor = RealIngestor(self.db) # Fixed class name
         self.preprocessor = PreprocessingService(self.db)
         self.discoverer = DiscoveryService()
         self.classifier = ClassificationService()

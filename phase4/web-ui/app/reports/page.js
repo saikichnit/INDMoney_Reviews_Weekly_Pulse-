@@ -13,9 +13,17 @@ export default function ReportsAndAutomation() {
   const [pollCount, setPollCount] = useState(0)
   const [runId, setRunId] = useState(null)
   const [runStatus, setRunStatus] = useState('queued')
+  const [initialLatestId, setInitialLatestId] = useState(null)
 
   useEffect(() => {
     fetchArchive()
+    // Capture the current latest ID so we know when a NEW one arrives
+    const captureInitialId = async () => {
+      const res = await fetch('/api/latest-report')
+      const data = await res.json()
+      if (data.id) setInitialLatestId(data.id)
+    }
+    captureInitialId()
   }, [])
 
   useEffect(() => {
@@ -59,9 +67,8 @@ export default function ReportsAndAutomation() {
     try {
       const res = await fetch('/api/latest-report')
       const data = await res.json()
-      if (data.id) {
-        // CODE LEVEL FIX: If the Action is done, just GO to the latest report. 
-        // No more timestamp math.
+      if (data.id && data.id !== initialLatestId) {
+        // NEW REPORT FOUND -> GO!
         window.location.href = `/report/${data.id}`
       }
     } catch (e) {}
