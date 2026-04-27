@@ -88,8 +88,9 @@ class iOSAdapter(BaseAdapter):
         ]
         
         mocks = []
-        # Generate 100 unique mock reviews spread across 360 days
-        for i in range(100):
+        # Generate proportional mock reviews spread across 360 days (capped at 1000 for safety)
+        count = min(limit, 1000)
+        for i in range(count):
             days_ago = random.randint(0, 360)
             rating = random.choice([5, 5, 4, 4, 3, 2, 1])
             # Add uniqueness to avoid deduplication

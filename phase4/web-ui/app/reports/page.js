@@ -9,6 +9,7 @@ export default function ReportsAndAutomation() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [selectedMonths, setSelectedMonths] = useState(10)
+  const [maxReviews, setMaxReviews] = useState(1000)
   const [isPolling, setIsPolling] = useState(false)
   const [pollCount, setPollCount] = useState(0)
   const [runId, setRunId] = useState(null)
@@ -83,7 +84,7 @@ export default function ReportsAndAutomation() {
 
     try {
       const days = selectedMonths * 30
-      const res = await fetch(`/api/generate-report?days=${days}`, { method: 'POST' })
+      const res = await fetch(`/api/generate-report?days=${days}&max_reviews=${maxReviews}`, { method: 'POST' })
       const data = await res.json()
       
       if (data.report_id) {
@@ -127,6 +128,21 @@ export default function ReportsAndAutomation() {
               <input 
                 type="range" min="1" max="12" value={selectedMonths}
                 onChange={(e) => setSelectedMonths(parseInt(e.target.value))}
+                className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#0066CC]"
+              />
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex justify-between items-end">
+                <div className="flex flex-col text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <span className="mb-1">REVIEW VOLUME</span>
+                  <span className="text-[#0066CC]">ANALYZE UP TO {maxReviews} REVIEWS</span>
+                </div>
+                <div className="text-3xl font-bold text-[#0066CC]">{maxReviews}</div>
+              </div>
+              <input 
+                type="range" min="100" max="5000" step="100" value={maxReviews}
+                onChange={(e) => setMaxReviews(parseInt(e.target.value))}
                 className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#0066CC]"
               />
             </div>
