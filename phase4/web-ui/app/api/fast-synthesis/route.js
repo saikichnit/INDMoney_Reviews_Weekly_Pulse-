@@ -71,8 +71,8 @@ export async function POST(request) {
         // B. Try Gemini (Fallback with Discovery)
         if (geminiKey) {
             try {
-                // Upgrade to 2.0 Flash for this advanced key
-                let modelName = "gemini-2.0-flash";
+                // Use the production-grade alias for best quota limits
+                let modelName = "gemini-flash-latest";
                 let geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
                 let geminiRes = await fetch(geminiUrl, {
                     method: "POST",
