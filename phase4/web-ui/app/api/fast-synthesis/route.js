@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Groq } from 'groq-sdk';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 export async function POST(request) {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const { searchParams } = new URL(request.url);
   const days = parseInt(searchParams.get('days') || '30');
   const maxReviews = parseInt(searchParams.get('max_reviews') || '1000');
