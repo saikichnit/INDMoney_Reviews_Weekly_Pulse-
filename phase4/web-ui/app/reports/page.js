@@ -69,7 +69,7 @@ export default function ReportsAndAutomation() {
       const data = await res.json()
       if (data.id && data.id !== initialLatestId) {
         // NEW REPORT FOUND -> GO!
-        window.location.href = `/report/${data.id}`
+        window.location.href = `/report/${data.id}?months=${selectedMonths}`
       }
     } catch (e) {}
   }
@@ -78,7 +78,7 @@ export default function ReportsAndAutomation() {
     setGenerating(true)
     // 5-SECOND EXPERIENCE: If we have an existing report, show it immediately
     if (reports.length > 0) {
-      router.push(`/report/${reports[0].id}?status=updating`)
+      router.push(`/report/${reports[0].id}?status=updating&months=${selectedMonths}`)
     }
 
     try {
@@ -87,7 +87,7 @@ export default function ReportsAndAutomation() {
       const data = await res.json()
       
       if (data.report_id) {
-        window.location.href = `/report/${data.report_id}`
+        window.location.href = `/report/${data.report_id}?months=${selectedMonths}`
       } else if (data.status === "started") {
         setRunId(data.run_id)
         setIsPolling(true)

@@ -138,7 +138,13 @@ export default function ReportPreview() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-3">
-              Weekly Pulse Note Preview
+              {(() => {
+                let m = null;
+                if (typeof window !== 'undefined') {
+                  m = new URLSearchParams(window.location.search).get('months');
+                }
+                return m ? `Strategic INDPlus Insights for Last ${m} Months` : 'Strategic INDPlus Insights';
+              })()}
               <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-[#0066CC] rounded-full uppercase tracking-widest">
                 {report.review_count} Reviews Analyzed
               </span>
