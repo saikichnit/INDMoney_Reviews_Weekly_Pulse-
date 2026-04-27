@@ -87,7 +87,8 @@ export async function POST(request) {
                 else if (text.includes("```")) text = text.split("```")[1].split("```")[0].trim();
                 synthesis = JSON.parse(text);
             } else {
-                throw new Error("Both Groq and Gemini failed to synthesize.");
+                const errorBody = await geminiRes.text();
+                throw new Error(`Both Groq and Gemini failed. Gemini Error: ${errorBody}`);
             }
         } else {
             throw err; // Re-throw Groq error if no Gemini key
