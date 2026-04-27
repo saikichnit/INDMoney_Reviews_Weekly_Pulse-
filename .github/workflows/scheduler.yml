@@ -12,6 +12,8 @@ on:
       weeks:
         description: 'Time window in weeks'
         default: '8'
+permissions:
+  contents: write
 
 jobs:
   weekly-pulse:
@@ -61,4 +63,4 @@ jobs:
           git checkout main
           git add data/*.json
           git commit -m "Auto-Pulse: Intelligence Sync [skip ci]" || echo "No changes to commit"
-          git push origin main --force
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main --force
