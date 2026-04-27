@@ -1,6 +1,9 @@
 import os
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Layer 1-3 Services
 from services.ingestion_service.real_ingestor import RealIngestor

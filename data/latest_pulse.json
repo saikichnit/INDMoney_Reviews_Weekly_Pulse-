@@ -1,28 +1,48 @@
 {
-  "report_id": 3,
-  "generated_at": "2026-04-27T07:44:09.368472",
+  "report_id": 5,
+  "generated_at": "2026-04-27T08:00:42.523915",
   "payload": {
-    "summary": "AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets.",
+    "summary": "The weekly review pulse highlights significant user experience issues, financial and transactional concerns, and product and interface improvement needs. 40% of users face user experience issues, 30% encounter financial and transactional concerns, and 30% suggest product and interface improvements.",
     "themes": [
       {
-        "name": "AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets.",
-        "percentage": 100
+        "name": "User Experience Issues",
+        "percentage": 40
+      },
+      {
+        "name": "Financial and Transactional Concerns",
+        "percentage": 30
+      },
+      {
+        "name": "Product and Interface Improvements",
+        "percentage": 30
       }
     ],
-    "quotes": [],
-    "action_items": [],
-    "action_ideas": [],
+    "quotes": [
+      "Worst experience. Very high transaction fees. Uninstalling right now.",
+      "Interface is complex and not good. you cannot increase font size.",
+      "INDmoney offers useful features, but constant UI/UX changes make it frustrating to use."
+    ],
+    "action_items": [
+      "Revamp the user interface to improve usability and consistency",
+      "Address financial and transactional concerns by reducing fees and improving transaction processes",
+      "Implement a feature to allow users to customize their homepage and prioritize user-friendly design"
+    ],
+    "action_ideas": [
+      "Revamp the user interface to improve usability and consistency",
+      "Address financial and transactional concerns by reducing fees and improving transaction processes",
+      "Implement a feature to allow users to customize their homepage and prioritize user-friendly design"
+    ],
     "fee_scenarios": [
       {
         "type": "exit_load",
         "scenario_name": "Mutual Fund Exit Load",
         "explanation_bullets": [
           "A mutual fund exit load is a fee charged to investors when they redeem their units from a mutual fund scheme.",
-          "The exit load is typically a percentage of the redemption amount and is deducted from the investor's proceeds.",
-          "The purpose of an exit load is to discourage investors from withdrawing their money from the fund too quickly, allowing the fund manager to maintain a stable portfolio.",
-          "Exit loads are usually applicable for a specific period, known as the 'exit load period', which can range from a few days to several years.",
-          "The exit load percentage and period vary across different mutual fund schemes and are specified in the scheme's offer document.",
-          "Investors should review the exit load details before investing in a mutual fund scheme to understand the potential costs associated with early redemptions."
+          "The exit load is usually a percentage of the redemption amount and is deducted from the investor's redemption proceeds.",
+          "The purpose of an exit load is to discourage investors from withdrawing their money from a mutual fund scheme too quickly.",
+          "The exit load percentage and the period for which it is applicable vary from scheme to scheme.",
+          "The exit load is typically higher for redemptions made within a short period of time, such as a few days or weeks, after investment.",
+          "The exit load is clearly disclosed in the mutual fund scheme's offer document and key information memorandum."
         ],
         "source_links": [
           "https://www.indmoney.com/mutual-funds/sbi-psu-direct-growth-3465",
@@ -34,12 +54,12 @@
         "type": "brokerage_fee",
         "scenario_name": "Brokerage Fee",
         "explanation_bullets": [
-          "A brokerage fee is a charge levied by a broker or brokerage firm for facilitating the buying and selling of securities.",
-          "This fee is typically a percentage of the transaction amount or a flat fee per transaction.",
-          "Brokerage fees can vary depending on the type of security being traded, such as stocks, bonds, or mutual funds.",
-          "Some brokers may charge additional fees for services like research, advisory, or account maintenance.",
-          "Brokerage fees are usually deducted from the investor's account at the time of the transaction.",
-          "Investors should review their brokerage agreements to understand the fee structure and any potential charges."
+          "A brokerage fee is a charge levied by a broker or brokerage firm for facilitating a transaction",
+          "This fee is typically a percentage of the transaction amount or a flat fee per trade",
+          "Brokerage fees can vary depending on the type of investment, such as stocks, bonds, or mutual funds",
+          "Some brokerage firms may offer discounted or waived fees for certain types of accounts or high-volume traders",
+          "Brokerage fees are usually deducted from the investor's account at the time of the transaction",
+          "Fees can impact investment returns, so it's essential to understand the fee structure before making a trade"
         ],
         "source_links": [
           "https://www.indmoney.com/mutual-funds/icici-prudential-infrastructure-fund-direct-plan-growth-3333",
@@ -50,19 +70,35 @@
     ],
     "review_count": 162,
     "weekly_pulse": {
-      "summary": "AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets.",
+      "summary": "The weekly review pulse highlights significant user experience issues, financial and transactional concerns, and product and interface improvement needs. 40% of users face user experience issues, 30% encounter financial and transactional concerns, and 30% suggest product and interface improvements.",
       "themes": [
         {
-          "name": "AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets.",
-          "percentage": 100
+          "name": "User Experience Issues",
+          "percentage": 40
+        },
+        {
+          "name": "Financial and Transactional Concerns",
+          "percentage": 30
+        },
+        {
+          "name": "Product and Interface Improvements",
+          "percentage": 30
         }
       ],
-      "quotes": [],
-      "action_items": []
+      "quotes": [
+        "Worst experience. Very high transaction fees. Uninstalling right now.",
+        "Interface is complex and not good. you cannot increase font size.",
+        "INDmoney offers useful features, but constant UI/UX changes make it frustrating to use."
+      ],
+      "action_items": [
+        "Revamp the user interface to improve usability and consistency",
+        "Address financial and transactional concerns by reducing fees and improving transaction processes",
+        "Implement a feature to allow users to customize their homepage and prioritize user-friendly design"
+      ]
     },
     "email_draft": {
       "subject": "Weekly INDMoney Voice of Customer Pulse",
-      "body": "AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets."
+      "body": "The weekly review pulse highlights significant user experience issues, financial and transactional concerns, and product and interface improvement needs. 40% of users face user experience issues, 30% encounter financial and transactional concerns, and 30% suggest product and interface improvements."
     }
   },
   "reviews": [
