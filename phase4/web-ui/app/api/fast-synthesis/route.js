@@ -70,7 +70,7 @@ export async function POST(request) {
         
         // B. Try Gemini (Fallback)
         if (geminiKey) {
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiKey}`;
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
             const geminiRes = await fetch(geminiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
