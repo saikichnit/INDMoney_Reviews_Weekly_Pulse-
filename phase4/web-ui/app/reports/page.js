@@ -87,17 +87,12 @@ export default function ReportsAndAutomation() {
         // Save transient report for instant viewing while GitHub persistence runs in background
         localStorage.setItem('transient_report', JSON.stringify(data))
         window.location.href = `/report/latest?transient=true`
-        return; // Exit early to avoid triggering the loader below
+        return;
       } else {
-        // Fallback to slow path if fast path fails
-        const slowRes = await fetch(`/api/generate-report?days=${days}&max_reviews=${maxReviews}`, { method: 'POST' })
-        const slowData = await slowRes.json()
-        if (slowData.run_id) {
-          setRunId(slowData.run_id)
-          setIsPolling(true)
-        } else {
-          setGenerating(false)
-        }
+        // [MODIFIED] No silent fallback. If fast path fails, we need to know WHY.
+        console.error("Fast Synthesis Failed:", data.error || "Unknown error")
+        alert(`Synthesis failed: ${data.message || 'Please check your GROQ_API_KEY on Vercel.'}`)
+        setGenerating(false)
       }
     } catch (err) { 
       console.error(err)
