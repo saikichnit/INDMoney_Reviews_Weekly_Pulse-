@@ -40,8 +40,12 @@ export async function POST(request) {
         return NextResponse.json({ error: "No Signals", message: "No reviews found for the selected window." }, { status: 404 });
     }
 
+    // [STRICT LIMIT] Respect the user's slider choice (e.g. 600 reviews)
+    const limitedReviews = filteredReviews.slice(0, maxReviews);
+
     // 3. Synthesis Preparation
-    const context = filteredReviews.slice(0, 50).map(r => `- ${r.review_text}`).join('\n');
+    // We only send a high-quality slice to the AI to avoid context window overflows
+    const context = limitedReviews.slice(0, 100).map(r => `- ${r.review_text}`).join('\n');
     const prompt = `
     Analyze these INDMoney app reviews and generate a Strategic Intelligence Report.
     REVIEWS:
@@ -128,7 +132,7 @@ export async function POST(request) {
     return NextResponse.json({
         id: Date.now(),
         ...synthesis,
-        review_count: filteredReviews.length,
+        review_count: limitedReviews.length,
         created_at: new Date().toISOString(),
         is_fast_path: true
     });
