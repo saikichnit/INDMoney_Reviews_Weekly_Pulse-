@@ -73,7 +73,7 @@ export async function POST(request) {
         if (geminiKey) {
             try {
                 const genAI = new GoogleGenerativeAI(geminiKey);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-pro" });
                 
                 const result = await model.generateContent(prompt + "\nIMPORTANT: Return ONLY raw JSON.");
                 const response = await result.response;
