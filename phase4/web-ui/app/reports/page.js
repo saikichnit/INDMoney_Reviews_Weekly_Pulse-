@@ -87,6 +87,7 @@ export default function ReportsAndAutomation() {
         // Save transient report for instant viewing while GitHub persistence runs in background
         localStorage.setItem('transient_report', JSON.stringify(data))
         window.location.href = `/report/latest?transient=true`
+        return; // Exit early to avoid triggering the loader below
       } else {
         // Fallback to slow path if fast path fails
         const slowRes = await fetch(`/api/generate-report?days=${days}&max_reviews=${maxReviews}`, { method: 'POST' })
@@ -94,11 +95,12 @@ export default function ReportsAndAutomation() {
         if (slowData.run_id) {
           setRunId(slowData.run_id)
           setIsPolling(true)
+        } else {
+          setGenerating(false)
         }
       }
     } catch (err) { 
       console.error(err)
-      // Final fallback
       setGenerating(false)
     }
   }
