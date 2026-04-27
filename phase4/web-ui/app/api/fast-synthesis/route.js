@@ -93,6 +93,10 @@ export async function POST(request) {
 
   } catch (err) {
     console.error("Fast Synthesis Failed:", err);
-    return NextResponse.json({ error: "Synthesis Error", details: err.message }, { status: 500 });
+    return NextResponse.json({ 
+        error: "Synthesis Error", 
+        message: err.message || "Unknown error during AI synthesis",
+        details: err.stack
+    }, { status: 500 });
   }
 }
