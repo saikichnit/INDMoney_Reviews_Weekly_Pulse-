@@ -311,13 +311,9 @@ export default function ReportPreview() {
 
                  <div className="space-y-4 mb-8">
                     {/* Action 1: Google Docs */}
-                    <button 
-                      onClick={() => handleApprove('docs')}
-                      disabled={approving}
-                      className="w-full text-left p-5 rounded-2xl border border-slate-100 bg-white hover:border-blue-100 hover:bg-blue-50/30 transition-all group relative overflow-hidden"
-                    >
-                       <div className="flex items-center gap-4 relative z-10">
-                          <div className="w-10 h-10 bg-blue-100/50 text-[#0066CC] rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                    <div className="p-5 rounded-2xl border border-slate-100 bg-white">
+                       <div className="flex items-center gap-4 mb-4">
+                          <div className="w-10 h-10 bg-blue-100/50 text-[#0066CC] rounded-xl flex items-center justify-center shadow-sm">
                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                              </svg>
@@ -326,16 +322,20 @@ export default function ReportPreview() {
                              <p className="text-sm font-bold text-slate-800">Send to Notes</p>
                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Push to internal documentation</p>
                           </div>
-                          <svg className="w-4 h-4 text-slate-300 group-hover:text-[#0066CC] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                          </svg>
                        </div>
-                    </button>
+                       <button 
+                         onClick={() => handleApprove('docs')} 
+                         disabled={approving} 
+                         className="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-[#0066CC] font-bold text-xs rounded-xl transition-colors"
+                       >
+                         Append to Google Doc
+                       </button>
+                    </div>
 
                     {/* Action 2: Email */}
-                    <div className="w-full text-left p-5 rounded-2xl border border-slate-100 bg-white hover:border-blue-100 hover:bg-blue-50/30 transition-all group">
+                    <div className="p-5 rounded-2xl border border-slate-100 bg-white">
                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-10 h-10 bg-indigo-100/50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                          <div className="w-10 h-10 bg-indigo-100/50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                              </svg>
@@ -344,23 +344,21 @@ export default function ReportPreview() {
                              <p className="text-sm font-bold text-slate-800">Create Email Draft</p>
                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Format for stakeholder inbox</p>
                           </div>
-                          <button 
-                            onClick={() => handleApprove('email')}
-                            disabled={approving}
-                            className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-colors"
-                          >
-                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                             </svg>
-                          </button>
                        </div>
                        <input 
                          type="email" 
-                         className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 px-3 text-[10px] font-bold text-slate-600 focus:outline-none focus:border-indigo-200 transition-all"
+                         className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 px-3 text-[10px] font-bold text-slate-600 focus:outline-none focus:border-indigo-200 transition-all mb-3"
                          value={recipientEmail}
                          onChange={(e) => setRecipientEmail(e.target.value)}
                          placeholder="recipient@indmoney.com"
                        />
+                       <button 
+                         onClick={() => handleApprove('email')} 
+                         disabled={approving} 
+                         className="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-xs rounded-xl transition-colors"
+                       >
+                         Send Email
+                       </button>
                     </div>
                  </div>
 
