@@ -16,6 +16,7 @@ env/
 
 # Databases and Local Data
 data/*.db
+!data/latest_pulse.json
 data/reports/json/*.json
 data/reports/pdf/*.pdf
 data/raw/
@@ -34,4 +35,4 @@ yarn-error.log*
 # System Files
 .DS_Store
 Thumbs.db
-data/latest_pulse.json
+
