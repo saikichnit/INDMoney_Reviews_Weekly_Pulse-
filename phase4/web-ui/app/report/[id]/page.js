@@ -8,7 +8,7 @@ export default function ReportPreview() {
   const router = useRouter()
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [approving, setApproving] = useState(false)
+  const [approving, setApproving] = useState(null) // null, 'docs', 'email', 'both'
   const [success, setSuccess] = useState(false)
   const [recipientEmail, setRecipientEmail] = useState('stakeholders@indmoney.com')
   const [editedSummary, setEditedSummary] = useState('')
@@ -64,7 +64,7 @@ export default function ReportPreview() {
   }, [id])
 
   const handleApprove = async (mode = 'both') => {
-    setApproving(true)
+    setApproving(mode)
     try {
       const res = await fetch(`/api/reports/${id}/approve`, {
         method: 'POST',
@@ -78,8 +78,8 @@ export default function ReportPreview() {
       
       const result = await res.json()
       if (res.ok) {
-        setSuccess(true)
-        setTimeout(() => setSuccess(false), 5000)
+        setSuccess(mode)
+        setTimeout(() => setSuccess(null), 5000)
       } else {
         alert("Action failed: " + (result.error || "Unknown error"))
       }
@@ -87,7 +87,7 @@ export default function ReportPreview() {
       console.error(err)
       alert("Network error occurred")
     } finally {
-      setApproving(false)
+      setApproving(null)
     }
   }
 
@@ -331,10 +331,17 @@ export default function ReportPreview() {
                        </div>
                        <button 
                          onClick={() => handleApprove('docs')} 
-                         disabled={approving} 
-                         className="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-[#0066CC] font-bold text-xs rounded-xl transition-colors"
+                         disabled={approving !== null} 
+                         className={`w-full py-2.5 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 ${
+                           approving === 'docs' ? 'bg-blue-100 text-[#0066CC]' : 'bg-blue-50 hover:bg-blue-100 text-[#0066CC]'
+                         }`}
                        >
-                         Append to Google Doc
+                         {approving === 'docs' ? (
+                           <>
+                             <span className="w-3 h-3 border-2 border-[#0066CC]/30 border-t-[#0066CC] rounded-full animate-spin" />
+                             Syncing...
+                           </>
+                         ) : 'Append to Google Doc'}
                        </button>
                     </div>
 
@@ -360,10 +367,17 @@ export default function ReportPreview() {
                        />
                        <button 
                          onClick={() => handleApprove('email')} 
-                         disabled={approving} 
-                         className="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-xs rounded-xl transition-colors"
+                         disabled={approving !== null} 
+                         className={`w-full py-2.5 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 ${
+                           approving === 'email' ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'
+                         }`}
                        >
-                         Send Email
+                         {approving === 'email' ? (
+                           <>
+                             <span className="w-3 h-3 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
+                             Sending...
+                           </>
+                         ) : 'Send Email'}
                        </button>
                     </div>
                  </div>
@@ -380,10 +394,10 @@ export default function ReportPreview() {
 
                     <button 
                       onClick={() => handleApprove('both')}
-                      disabled={approving}
-                      className={`w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-emerald-100 transition-all ${approving ? 'opacity-70 scale-95' : 'hover:scale-[1.02] active:scale-95'}`}
+                      disabled={approving !== null}
+                      className={`w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-emerald-100 transition-all ${approving !== null ? 'opacity-70 scale-95' : 'hover:scale-[1.02] active:scale-95'}`}
                     >
-                       {approving ? (
+                       {approving === 'both' ? (
                          <>
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             Processing...
@@ -415,7 +429,9 @@ export default function ReportPreview() {
                   <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Pulse Delivered Successfully</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">
+                    {success === 'docs' ? 'Notes Synced' : (success === 'email' ? 'Email Delivered' : 'Pulse Fully Delivered')}
+                  </span>
                 </div>
               )}
 
