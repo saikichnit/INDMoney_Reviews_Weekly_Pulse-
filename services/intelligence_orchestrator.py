@@ -62,7 +62,7 @@ class IntelligenceOrchestrator:
                     if last_report_at:
                         last_dt = datetime.fromisoformat(last_report_at.split('.')[0])
                         # If the DB has enough data and we ran recently, we can skip ingestion
-                        if (datetime.now() - last_dt).days < 1 and count >= (max_reviews / 2):
+                        if (datetime.now() - last_dt).days < 1 and count >= max_reviews:
                             needs_ingest = False
                             print(f"⚡ Using Cached Signals ({count} reviews in window)")
                         else:

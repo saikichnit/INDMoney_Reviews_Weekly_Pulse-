@@ -22,33 +22,8 @@ export async function POST(request) {
     }
 
     try {
-      // 1. ROOT CAUSE FIX: Check if a fresh report for this window already exists
-      // Use the GitHub API (not RAW) to bypass the 5-minute cache.
-      const ARCHIVE_API_URL = `https://api.github.com/repos/${githubRepo}/contents/data/reports_archive.json`;
-      const archiveRes = await fetch(ARCHIVE_API_URL, { 
-        headers: { 
-          'Authorization': `token ${githubToken}`,
-          'Accept': 'application/vnd.github.v3.raw'
-        },
-        cache: 'no-store'
-      });
-      const reports = await archiveRes.json();
-      
-      if (Array.isArray(reports) && reports.length > 0) {
-        const latest = reports[0];
-        const createdAt = new Date(latest.created_at);
-        const ageInHours = (new Date() - createdAt) / 3600000;
-        
-        // If we have a report from the last 12 hours, return it INSTANTLY
-        // This solves the "80 seconds" wait by using pre-analyzed proactive data.
-        if (ageInHours < 12) {
-          return NextResponse.json({ 
-            report_id: latest.id, 
-            status: "success", 
-            message: "Instant pulse retrieved from intelligence cache." 
-          });
-        }
-      }
+      // [MODIFIED] Bypassing intelligence cache to ensure fresh reports on every manual trigger
+      // Previous logic was returning old reports even if sliders were adjusted.
 
       // 2. CONCURRENCY GUARD: Check for existing in-progress actions
       const actionsRes = await fetch(`https://api.github.com/repos/${githubRepo}/actions/runs?status=in_progress`, {

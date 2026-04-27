@@ -77,12 +77,8 @@ export default function ReportsAndAutomation() {
 
   const handleGenerate = async () => {
     setGenerating(true)
-    // 5-SECOND EXPERIENCE: If we have an existing report, show it immediately
-    if (reports.length > 0) {
-      router.push(`/report/${reports[0].id}?status=updating&months=${selectedMonths}`)
-    }
-
     try {
+      // [REMOVED] Immediate redirect to old report. Users want to see the progress of the NEW one.
       const days = selectedMonths * 30
       const res = await fetch(`/api/generate-report?days=${days}&max_reviews=${maxReviews}`, { method: 'POST' })
       const data = await res.json()
