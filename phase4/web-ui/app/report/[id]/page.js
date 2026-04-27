@@ -325,7 +325,20 @@ export default function ReportPreview() {
                              </svg>
                           </div>
                           <div className="flex-1">
-                             <p className="text-sm font-bold text-slate-800">Send to Notes</p>
+                             <div className="flex items-center gap-2">
+                               <p className="text-sm font-bold text-slate-800">Send to Notes</p>
+                               <a 
+                                 href="https://docs.google.com/document/d/18CMQaITOJK02gX2BfQwL1Rkw4QWC6sJDMjim865-bOk/edit" 
+                                 target="_blank" 
+                                 rel="noopener noreferrer"
+                                 className="text-[#0066CC] hover:text-blue-700 transition-colors"
+                                 title="Open Google Doc"
+                               >
+                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                 </svg>
+                               </a>
+                             </div>
                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Push to internal documentation</p>
                           </div>
                        </div>
