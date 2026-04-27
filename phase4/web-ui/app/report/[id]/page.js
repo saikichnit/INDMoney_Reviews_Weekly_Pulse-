@@ -26,7 +26,9 @@ export default function ReportPreview() {
       setLoading(true)
       
       const searchParams = new URLSearchParams(window.location.search)
-      if (searchParams.get('transient') === 'true') {
+      const isTransient = searchParams.get('transient') === 'true'
+      
+      if (isTransient) {
         const transientData = localStorage.getItem('transient_report')
         if (transientData) {
           try {
@@ -42,8 +44,8 @@ export default function ReportPreview() {
       }
 
       try {
-        // 1. Try local API first
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/reports/${id}`)
+        // 1. Try relative API path first (works on Vercel)
+        const res = await fetch(`/api/reports/${id}`)
         const data = await res.json()
         if (data && !data.error) {
           setReport(data)
