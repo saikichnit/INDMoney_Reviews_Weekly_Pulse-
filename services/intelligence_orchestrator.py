@@ -43,21 +43,35 @@ class IntelligenceOrchestrator:
         self.pdf_service = PDFService()
 
     def run_pipeline(self, fee_types="exit_load,brokerage_fee", max_reviews=1000, days=30):
-        # 1. Check if we need fresh ingestion (Cache for 24h)
+        # 1. Cache Check: Ingest if DB is empty or if we need a fresh window
         with self.db._get_connection() as conn:
             try:
-                # Check when the last report was generated
-                result = conn.execute("SELECT MAX(created_at) FROM reports").fetchone()
-                last_report_at = result[0] if result and result[0] else None
-                needs_ingest = True
-                if last_report_at:
-                    # If we generated a report in the last 24h, we likely have fresh data
-                    last_dt = datetime.fromisoformat(last_report_at.split('.')[0])
-                    if (datetime.now() - last_dt).days < 1:
-                        needs_ingest = False
-                        print("⚡ Using Cached Signals (Freshness < 24h)")
+                # Check how many reviews we have in the DB for the requested window
+                query = f"SELECT COUNT(*) FROM raw_reviews WHERE review_date > datetime('now', '-{days} days')"
+                count = conn.execute(query).fetchone()[0]
+                
+                # If we have very few reviews or the DB is near-empty, force ingest
+                if count < 50:
+                    needs_ingest = True
+                    print(f"📡 Low Signal Count ({count}): Forcing fresh ingestion...")
+                else:
+                    # Check the latest report's window (we'll assume 24h freshness for the SAME window)
+                    result = conn.execute("SELECT MAX(created_at) FROM reports").fetchone()
+                    last_report_at = result[0] if result and result[0] else None
+                    
+                    if last_report_at:
+                        last_dt = datetime.fromisoformat(last_report_at.split('.')[0])
+                        # If the DB has enough data and we ran recently, we can skip ingestion
+                        if (datetime.now() - last_dt).days < 1 and count >= (max_reviews / 2):
+                            needs_ingest = False
+                            print(f"⚡ Using Cached Signals ({count} reviews in window)")
+                        else:
+                            needs_ingest = True
+                    else:
+                        needs_ingest = True
             except Exception as e:
                 print(f"Cache check error: {e}")
+                needs_ingest = True
                 needs_ingest = True
 
         if needs_ingest:

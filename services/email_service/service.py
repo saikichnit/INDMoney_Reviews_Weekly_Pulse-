@@ -121,7 +121,12 @@ class EmailDeliveryService:
             msg.attach(MIMEText(body, 'html'))
 
             # Attach Banner Image (CID)
-            banner_path = "/Users/saikrishna/.gemini/antigravity/brain/89bbcbae-e048-498f-a8ca-ea2daaf1c48b/executive_pulse_banner_1777109672395.png"
+            banner_path = os.environ.get("EMAIL_BANNER_PATH")
+            if not banner_path or not os.path.exists(banner_path):
+                # Fallback to local project path
+                project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                banner_path = os.path.join(project_root, "assets", "banner.png")
+
             if os.path.exists(banner_path):
                 from email.mime.image import MIMEImage
                 with open(banner_path, 'rb') as f:

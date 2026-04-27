@@ -16,22 +16,32 @@ class GoogleDocsHelper:
         Clears the document and syncs the specific report text for standalone archival.
         """
         try:
-            # Try loading from Streamlit Secrets first (Production/Cloud)
+            # Try loading from Environment Variable (GitHub Actions/Vercel)
             try:
-                import streamlit as st
-                if "GCP_SERVICE_ACCOUNT" in st.secrets:
-                    creds_dict = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+                env_creds = os.environ.get("GCP_SERVICE_ACCOUNT_JSON")
+                if env_creds:
+                    creds_dict = json.loads(env_creds)
                     creds = service_account.Credentials.from_service_account_info(
                         creds_dict, scopes=self.scopes)
                 else:
                     raise ImportError
             except (ImportError, KeyError, Exception):
-                # Fallback to local file (Development)
-                if not os.path.exists(self.creds_file):
-                    print(f"ERROR: Credentials file not found: {self.creds_file}")
-                    return False
-                creds = service_account.Credentials.from_service_account_file(
-                    self.creds_file, scopes=self.scopes)
+                # Try loading from Streamlit Secrets first (Production/Cloud)
+                try:
+                    import streamlit as st
+                    if "GCP_SERVICE_ACCOUNT" in st.secrets:
+                        creds_dict = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+                        creds = service_account.Credentials.from_service_account_info(
+                            creds_dict, scopes=self.scopes)
+                    else:
+                        raise ImportError
+                except (ImportError, KeyError, Exception):
+                    # Fallback to local file (Development)
+                    if not self.creds_file or not os.path.exists(self.creds_file):
+                        print(f"ERROR: Credentials file not found: {self.creds_file}")
+                        return False
+                    creds = service_account.Credentials.from_service_account_file(
+                        self.creds_file, scopes=self.scopes)
             
             service = build('docs', 'v1', credentials=creds)
 
@@ -77,21 +87,31 @@ class GoogleDocsHelper:
         Appends the report text to the end of the document with a timestamp header.
         """
         try:
-            # Try loading from Streamlit Secrets first
+            # Try loading from Environment Variable (GitHub Actions/Vercel)
             try:
-                import streamlit as st
-                if "GCP_SERVICE_ACCOUNT" in st.secrets:
-                    creds_dict = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+                env_creds = os.environ.get("GCP_SERVICE_ACCOUNT_JSON")
+                if env_creds:
+                    creds_dict = json.loads(env_creds)
                     creds = service_account.Credentials.from_service_account_info(
                         creds_dict, scopes=self.scopes)
                 else:
                     raise ImportError
             except (ImportError, KeyError, Exception):
-                if not os.path.exists(self.creds_file):
-                    print(f"ERROR: Credentials file not found: {self.creds_file}")
-                    return False
-                creds = service_account.Credentials.from_service_account_file(
-                    self.creds_file, scopes=self.scopes)
+                # Try loading from Streamlit Secrets first
+                try:
+                    import streamlit as st
+                    if "GCP_SERVICE_ACCOUNT" in st.secrets:
+                        creds_dict = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+                        creds = service_account.Credentials.from_service_account_info(
+                            creds_dict, scopes=self.scopes)
+                    else:
+                        raise ImportError
+                except (ImportError, KeyError, Exception):
+                    if not self.creds_file or not os.path.exists(self.creds_file):
+                        print(f"ERROR: Credentials file not found: {self.creds_file}")
+                        return False
+                    creds = service_account.Credentials.from_service_account_file(
+                        self.creds_file, scopes=self.scopes)
             
             service = build('docs', 'v1', credentials=creds)
 

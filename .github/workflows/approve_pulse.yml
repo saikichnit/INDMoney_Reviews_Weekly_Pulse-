@@ -1,0 +1,40 @@
+name: Approve and Deliver Pulse
+
+on:
+  workflow_dispatch:
+    inputs:
+      id:
+        description: 'Report ID'
+        required: true
+      text:
+        description: 'Edited Summary Text'
+        required: true
+      email:
+        description: 'Recipient Email'
+        required: true
+      mode:
+        description: 'Mode (email, docs, both)'
+        required: true
+        default: 'both'
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        
+      - name: Install dependencies
+        run: uv pip install -r requirements.txt --system
+        
+      - name: Approve and Deliver
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GOOGLE_DOC_ID: ${{ secrets.GOOGLE_DOC_ID }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        run: |
+          python3 phase4/approve_bridge.py --id "${{ github.event.inputs.id }}" --text "${{ github.event.inputs.text }}" --email "${{ github.event.inputs.email }}" --mode "${{ github.event.inputs.mode }}"

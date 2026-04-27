@@ -24,8 +24,28 @@ def main():
     # Database
     db = DatabaseManager()
     report = db.get_report_by_id(args.id)
+    
+    # Fallback to JSON archive if DB lookup fails (e.g. on GitHub Actions)
     if not report:
-        print(json.dumps({"error": f"Report ID {args.id} not found in database"}))
+        archive_path = 'data/reports_archive.json'
+        if os.path.exists(archive_path):
+            try:
+                with open(archive_path, 'r') as f:
+                    archive = json.load(f)
+                    report = next((r for r in archive if r.get('id') == args.id), None)
+                    if report:
+                        # Ensure nested fields are parsed if they are strings
+                        for field in ['themes', 'quotes', 'action_items', 'fee_scenarios']:
+                            if field in report and isinstance(report[field], str):
+                                try:
+                                    report[field] = json.loads(report[field])
+                                except:
+                                    pass
+            except Exception as e:
+                print(f"Warning: Failed to load from archive: {e}")
+
+    if not report:
+        print(json.dumps({"error": f"Report ID {args.id} not found in database or archive"}))
         sys.exit(1)
 
     # Use the edited text from the UI
