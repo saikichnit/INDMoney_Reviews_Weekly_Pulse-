@@ -223,7 +223,12 @@ export default function ReportsAndAutomation() {
               ) : reports.map((report) => (
                 <div key={report.id} className="grid grid-cols-4 px-10 py-8 items-center hover:bg-gray-50/30">
                   <div className="flex flex-col">
-                    <div className="text-sm font-bold text-slate-900 uppercase">{new Date(report.created_at).toLocaleDateString()}</div>
+                    <div className="text-sm font-bold text-slate-900 uppercase">
+                      {new Date(report.created_at).toLocaleDateString()} 
+                      <span className="text-gray-400 font-normal ml-2">
+                        {new Date(report.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
                     {report.is_local && (
                       <span className="text-[9px] font-black text-white bg-[#0066CC] px-1.5 py-0.5 rounded w-fit mt-1">JUST NOW</span>
                     )}
