@@ -50,13 +50,18 @@ def main():
             except:
                 existing_archive = []
         
-        # Merge DB reports with JSON archive (deduplicate by created_at or id)
+        # Merge DB reports with JSON archive (deduplicate by created_at)
         db_reports = db.get_all_reports()
         
         # Simple merge: Add new DB reports to existing archive if they don't exist
-        existing_ids = {r.get('id') for r in existing_archive if r.get('id')}
+        existing_timestamps = {r.get('created_at') for r in existing_archive if r.get('created_at')}
+        
         for dr in db_reports:
-            if dr.get('id') not in existing_ids:
+            # If the ID is 1 (likely fresh DB) or doesn't exist, we use created_at to check
+            if dr.get('created_at') not in existing_timestamps:
+                # Assign a unique numeric-like ID if it's a collision
+                if any(r.get('id') == dr.get('id') for r in existing_archive):
+                    dr['id'] = int(datetime.now().timestamp())
                 existing_archive.insert(0, dr)
         
         # Sort by creation date descending

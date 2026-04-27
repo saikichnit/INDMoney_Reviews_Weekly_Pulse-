@@ -3,6 +3,8 @@ import { Groq } from 'groq-sdk';
 
 export async function POST(request) {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const geminiKey = process.env.GEMINI_API_KEY;
+  
   const { searchParams } = new URL(request.url);
   const days = parseInt(searchParams.get('days') || '30');
   const maxReviews = parseInt(searchParams.get('max_reviews') || '1000');
@@ -11,7 +13,7 @@ export async function POST(request) {
   const githubToken = process.env.GITHUB_TOKEN;
 
   try {
-    // 1. Fetch Review Lake from GitHub (Warm Cache)
+    // 1. Fetch Review Lake from GitHub
     const lakeUrl = `https://raw.githubusercontent.com/${githubRepo}/main/data/latest_pulse.json?t=${Date.now()}`;
     const lakeRes = await fetch(lakeUrl, { cache: 'no-store' });
     
@@ -38,10 +40,8 @@ export async function POST(request) {
         return NextResponse.json({ error: "No Signals", message: "No reviews found for the selected window." }, { status: 404 });
     }
 
-    // 3. Fast Synthesis (Optimized for Free Tier TPM Limits)
-    // We limit context to 50 reviews to stay under 12,000 TPM limit
+    // 3. Synthesis Preparation
     const context = filteredReviews.slice(0, 50).map(r => `- ${r.review_text}`).join('\n');
-    
     const prompt = `
     Analyze these INDMoney app reviews and generate a Strategic Intelligence Report.
     REVIEWS:
@@ -55,30 +55,44 @@ export async function POST(request) {
     5. "sentiment_distribution": {positive, negative, neutral} percentages.
     `;
 
-    // Call Groq with Retry Logic
-    let response;
-    let retries = 3;
-    let delay = 2000;
+    let synthesis = null;
 
-    for (let i = 0; i < retries; i++) {
-        try {
-            response = await groq.chat.completions.create({
-                messages: [{ role: "user", content: prompt }],
-                model: "llama-3.3-70b-versatile",
-                response_format: { type: "json_object" }
+    // A. Try Groq (Primary)
+    try {
+        const response = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt }],
+            model: "llama-3.3-70b-versatile",
+            response_format: { type: "json_object" }
+        });
+        synthesis = JSON.parse(response.choices[0].message.content);
+    } catch (err) {
+        console.error("Groq Failed, trying Gemini Fallback:", err.message);
+        
+        // B. Try Gemini (Fallback)
+        if (geminiKey) {
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiKey}`;
+            const geminiRes = await fetch(geminiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt + "\nIMPORTANT: Return ONLY raw JSON." }] }]
+                })
             });
-            break;
-        } catch (err) {
-            if ((err.status === 429 || err.message.includes("rate_limit")) && i < retries - 1) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2;
-                continue;
+
+            if (geminiRes.ok) {
+                const geminiData = await geminiRes.json();
+                let text = geminiData.candidates[0].content.parts[0].text;
+                // Basic cleanup of markdown if Gemini adds it
+                if (text.includes("```json")) text = text.split("```json")[1].split("```")[0].trim();
+                else if (text.includes("```")) text = text.split("```")[1].split("```")[0].trim();
+                synthesis = JSON.parse(text);
+            } else {
+                throw new Error("Both Groq and Gemini failed to synthesize.");
             }
-            throw err;
+        } else {
+            throw err; // Re-throw Groq error if no Gemini key
         }
     }
-
-    const synthesis = JSON.parse(response.choices[0].message.content);
 
     // 4. Persistence Dispatch (Async)
     if (githubToken) {
@@ -101,10 +115,10 @@ export async function POST(request) {
     });
 
   } catch (err) {
-    console.error("Fast Synthesis Failed:", err);
+    console.error("Synthesis Failed:", err);
     return NextResponse.json({ 
         error: "Synthesis Error", 
-        message: err.message || "Unknown error during AI synthesis"
+        message: err.message || "AI synthesis failed on all providers."
     }, { status: 500 });
   }
 }
