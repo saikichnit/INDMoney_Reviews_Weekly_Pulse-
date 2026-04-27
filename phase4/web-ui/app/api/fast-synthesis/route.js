@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Groq } from 'groq-sdk';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST(request) {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -68,30 +69,27 @@ export async function POST(request) {
     } catch (err) {
         console.error("Groq Failed, trying Gemini Fallback:", err.message);
         
-        // B. Try Gemini (Fallback)
+        // B. Try Gemini (Fallback via Official SDK)
         if (geminiKey) {
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-            const geminiRes = await fetch(geminiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt + "\nIMPORTANT: Return ONLY raw JSON." }] }]
-                })
-            });
-
-            if (geminiRes.ok) {
-                const geminiData = await geminiRes.json();
-                let text = geminiData.candidates[0].content.parts[0].text;
-                // Basic cleanup of markdown if Gemini adds it
+            try {
+                const genAI = new GoogleGenerativeAI(geminiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                
+                const result = await model.generateContent(prompt + "\nIMPORTANT: Return ONLY raw JSON.");
+                const response = await result.response;
+                let text = response.text();
+                
+                // Cleanup markdown
                 if (text.includes("```json")) text = text.split("```json")[1].split("```")[0].trim();
                 else if (text.includes("```")) text = text.split("```")[1].split("```")[0].trim();
+                
                 synthesis = JSON.parse(text);
-            } else {
-                const errorBody = await geminiRes.text();
-                throw new Error(`Both Groq and Gemini failed. Gemini Error: ${errorBody}`);
+            } catch (geminiErr) {
+                console.error("Gemini SDK Failed:", geminiErr);
+                throw new Error(`Both Groq and Gemini failed. Gemini Error: ${geminiErr.message}`);
             }
         } else {
-            throw err; // Re-throw Groq error if no Gemini key
+            throw err;
         }
     }
 
