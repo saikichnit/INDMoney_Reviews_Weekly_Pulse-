@@ -9,7 +9,12 @@ class NoteService:
         self.model = "llama-3.3-70b-versatile"
 
     def generate_note(self, themes: list, reviews: list) -> dict:
-        if not self.client: return {}
+        if not self.client: 
+            return {
+                "summary": "AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets.",
+                "quotes": [],
+                "action_items": []
+            }
         
         # Take a few representative reviews for quotes
         context = "\n".join([f"- {r['review_text']}" for r in reviews[:50]])
@@ -39,4 +44,8 @@ class NoteService:
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             print(f"Note generation error: {e}")
-            return {}
+            return {
+                "summary": f"AI Synthesis Failed. Error: {str(e)}. Please check your GROQ_API_KEY GitHub Secret or Rate Limits.",
+                "quotes": [],
+                "action_items": []
+            }

@@ -8,7 +8,8 @@ class DiscoveryService:
         self.model = "llama-3.3-70b-versatile"
 
     def discover_signals(self, reviews: list) -> list:
-        if not self.client: return []
+        if not self.client: 
+            return ["AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets."]
         
         context = "\n".join([f"- {r['review_text']}" for r in reviews[:100]])
         prompt = f"""

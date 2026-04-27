@@ -9,7 +9,8 @@ class ClassificationService:
         self.model = "llama-3.3-70b-versatile"
 
     def classify_themes(self, signals: list) -> dict:
-        if not self.client: return {"themes": []}
+        if not self.client: 
+            return {"themes": [{"name": "AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets.", "percentage": 100}]}
         
         prompt = f"""
         Group these raw signals into 3-5 high-level actionable themes for a product team.
@@ -29,7 +30,7 @@ class ClassificationService:
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             print(f"Classification error: {e}")
-            return {"themes": []}
+            return {"themes": [{"name": f"AI Error: {str(e)}", "percentage": 100}]}
 
     def detect_sentiment(self, text: str) -> str:
         """Fast heuristic-based sentiment detection for high-volume pulses."""
