@@ -23,6 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
         
@@ -36,5 +41,6 @@ jobs:
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+          EMAIL_BANNER_PATH: assets/banner.png
         run: |
           python3 phase4/approve_bridge.py --id "${{ github.event.inputs.id }}" --text "${{ github.event.inputs.text }}" --email "${{ github.event.inputs.email }}" --mode "${{ github.event.inputs.mode }}"
