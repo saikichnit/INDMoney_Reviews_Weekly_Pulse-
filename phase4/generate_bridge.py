@@ -40,12 +40,33 @@ def main():
             "reviews": sample_reviews
         }
         
-        reports_list = db.get_all_reports()
+        # Persistence logic for GitHub Environments (where SQLite is transient)
+        reports_archive_path = "data/reports_archive.json"
+        existing_archive = []
+        if os.path.exists(reports_archive_path):
+            try:
+                with open(reports_archive_path, 'r') as f:
+                    existing_archive = json.load(f)
+            except:
+                existing_archive = []
         
+        # Merge DB reports with JSON archive (deduplicate by created_at or id)
+        db_reports = db.get_all_reports()
+        
+        # Simple merge: Add new DB reports to existing archive if they don't exist
+        existing_ids = {r.get('id') for r in existing_archive if r.get('id')}
+        for dr in db_reports:
+            if dr.get('id') not in existing_ids:
+                existing_archive.insert(0, dr)
+        
+        # Sort by creation date descending
+        existing_archive.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+
         with open("data/latest_pulse.json", "w") as f:
             json.dump(latest_data, f, indent=2)
-        with open("data/reports_archive.json", "w") as f:
-            json.dump(reports_list, f, indent=2)
+            
+        with open(reports_archive_path, "w") as f:
+            json.dump(existing_archive, f, indent=2)
             
         print(json.dumps({"report_id": report_id, "status": "success"}))
     else:

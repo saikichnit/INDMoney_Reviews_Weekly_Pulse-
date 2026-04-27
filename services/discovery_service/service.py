@@ -14,7 +14,8 @@ class DiscoveryService:
         if not self.client: 
             return ["AI Client Initialization Failed. GROQ_API_KEY is missing from GitHub Secrets."]
         
-        context = "\n".join([f"- {r['review_text']}" for r in reviews[:300]])
+        # Limit context to stay within TPM limits (100 reviews max)
+        context = "\n".join([f"- {r['review_text']}" for r in reviews[:100]])
         prompt = f"""
         Extract the top 10 raw signals (topics, bugs, or feature requests) from these reviews.
         REVIEWS:
