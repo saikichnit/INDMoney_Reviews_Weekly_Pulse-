@@ -106,9 +106,20 @@ class IntelligenceOrchestrator:
             "summary": note_data.get("summary", "No summary available."),
             "themes": themes_data.get("themes", []),
             "quotes": note_data.get("quotes", []),
+            "action_items": note_data.get("action_items", []),
             "action_ideas": note_data.get("action_items", []),
             "fee_scenarios": fee_scenarios,
-            "review_count": len(filtered_data)
+            "review_count": len(filtered_data),
+            "weekly_pulse": {
+                "summary": note_data.get("summary", "No summary available."),
+                "themes": themes_data.get("themes", []),
+                "quotes": note_data.get("quotes", []),
+                "action_items": note_data.get("action_items", [])
+            },
+            "email_draft": {
+                "subject": "Weekly INDMoney Voice of Customer Pulse",
+                "body": note_data.get("summary", "No summary available.")
+            }
         }
 
         # 6. Cross-Platform Delivery

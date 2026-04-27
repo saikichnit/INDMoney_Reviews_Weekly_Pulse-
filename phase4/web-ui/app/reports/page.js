@@ -99,28 +99,7 @@ export default function ReportsAndAutomation() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
-      <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-100">
-        <div className="flex items-center space-x-12">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[#0066CC] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">I</span>
-            </div>
-            <span className="text-xl font-bold text-gray-400">Pulse</span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-500">
-            <Link href="/" className="hover:text-[#0066CC] transition-colors">INDMoney Insights</Link>
-            <Link href="/categories" className="hover:text-[#0066CC] transition-colors">Categories</Link>
-            <div className="flex items-center space-x-1">
-              <Link href="/reports" className="text-slate-900 font-semibold underline decoration-2 underline-offset-8">INDPlus</Link>
-              <span className="text-[10px] bg-blue-50 text-[#0066CC] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter border border-blue-100">MCP</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center space-x-4">
-          <span className="bg-[#E7F7F1] text-[#22C55E] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-[#D1F2E5]">Production</span>
-          <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">SK</div>
-        </div>
-      </nav>
+
 
       <main className="max-w-7xl mx-auto px-8 py-16">
         <div className="flex flex-col lg:flex-row justify-between items-start gap-20 mb-24">
