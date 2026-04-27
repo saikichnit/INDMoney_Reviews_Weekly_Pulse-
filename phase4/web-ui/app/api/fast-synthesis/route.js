@@ -71,8 +71,8 @@ export async function POST(request) {
         // B. Try Gemini (Fallback with Discovery)
         if (geminiKey) {
             try {
-                // Use the production-grade alias for best quota limits
-                let modelName = "gemini-flash-latest";
+                // Use the 'Lite' model for much higher free-tier quota limits
+                let modelName = "gemini-2.0-flash-lite";
                 let geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
                 let geminiRes = await fetch(geminiUrl, {
                     method: "POST",
