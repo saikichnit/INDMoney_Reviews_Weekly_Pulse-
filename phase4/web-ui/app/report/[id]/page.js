@@ -71,7 +71,7 @@ export default function ReportPreview() {
         const ARCHIVE_URL = "https://raw.githubusercontent.com/saikichnit/INDMoney_Reviews_Weekly_Pulse-/main/data/reports_archive.json";
         const res = await fetch(ARCHIVE_URL, { cache: 'no-store' });
         const archive = await res.json();
-        const found = archive.find(r => r.id === parseInt(id));
+        const found = archive.find(r => String(r.id) === String(id));
         if (found) {
           // Parse JSON strings if they haven't been parsed yet
           const parsed = { ...found };
@@ -82,9 +82,23 @@ export default function ReportPreview() {
           
           setReport(parsed)
           setEditedSummary(parsed.summary || '')
+          setLoading(false)
+          return
         }
       } catch (err) {
-        console.error("All report fetch methods failed", err)
+        console.error("Remote fetch methods failed", err)
+      }
+
+      // 3. FINAL FALLBACK: Check local archive (for reports still syncing to GitHub)
+      try {
+        const localArchive = JSON.parse(localStorage.getItem('local_archive') || '[]');
+        const localFound = localArchive.find(r => String(r.id) === String(id));
+        if (localFound) {
+          setReport(localFound)
+          setEditedSummary(localFound.summary || '')
+        }
+      } catch (e) {
+        console.error("Local fallback failed", e)
       } finally {
         setLoading(false)
       }
