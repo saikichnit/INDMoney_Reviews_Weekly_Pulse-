@@ -28,7 +28,11 @@ export async function POST(request) {
     cutoffDate.setDate(cutoffDate.getDate() - days);
     
     const filteredReviews = allReviews
-      .filter(r => new Date(r.review_date) > cutoffDate)
+      .filter(r => {
+          const rDate = r.review_date || r.date;
+          if (!rDate) return true; // Default to passing if date is missing
+          return new Date(rDate) > cutoffDate;
+      })
       .slice(0, maxReviews);
 
     if (filteredReviews.length === 0) {

@@ -140,7 +140,7 @@ class DatabaseManager:
                             app_version = excluded.app_version,
                             helpful_count = excluded.helpful_count
                     ''', (
-                        r.get('user_name'), r['review_text'], r['rating'], r.get('date'), 
+                        r.get('user_name'), r['review_text'], r['rating'], r.get('review_date') or r.get('date'), 
                         datetime.now().isoformat(), r.get('sentiment'), r.get('category'), 
                         r.get('platform'), r.get('app_version'), r.get('helpful_count', 0),
                         r['content_hash']
