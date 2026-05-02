@@ -1,48 +1,56 @@
 {
   "report_id": 1,
-  "generated_at": "2026-05-02T11:36:44.052930",
+  "generated_at": "2026-05-02T12:42:22.413879",
   "payload": {
-    "summary": "This week's review pulse highlights significant concerns with the app's performance, security, and customer support. Many users have reported glitches, incorrect auto-linked bank accounts, and unresponsive customer care. The recent UI update has also received negative feedback, with users finding it less intuitive and user-friendly.",
+    "summary": "The weekly review pulse indicates a strong emphasis on User Experience and Interface (30%) and Technical Issues and Bugs (25%). Many users have reported issues with the app's UI, including glitches, poor navigation, and missing features. Some have also experienced problems with account and payment issues, such as incorrect auto-linked bank accounts and high transaction fees. The app's communication and support have also been criticized for being unresponsive and unhelpful.",
     "themes": [
       {
-        "name": "Product Experience",
-        "percentage": 40
-      },
-      {
-        "name": "Customer Support and Security",
+        "name": "User Experience and Interface",
         "percentage": 30
       },
       {
-        "name": "Fees, Features, and Functionality",
-        "percentage": 30
+        "name": "Technical Issues and Bugs",
+        "percentage": 25
+      },
+      {
+        "name": "Fees, Features, and Transparency",
+        "percentage": 20
+      },
+      {
+        "name": "Account and Payment Issues",
+        "percentage": 15
+      },
+      {
+        "name": "Communication and Support",
+        "percentage": 10
       }
     ],
     "quotes": [
-      "Earlier the app used to be nice and responsive while trading in options. Now app is full of glitches and not showing premium properly.",
-      "Serious Concern Regarding Incorrect Auto-Linked Bank Account",
-      "I am trying to connect with customer care from friday 18 april,2026 from app but there is no option to connect live agent"
+      "The new Dashboard is cheap and not helpful",
+      "The app is full of glitches and not showing premium properly, even stop loss and TP is not triggered",
+      "The customer support is poor, multiple attempts at depositing funds from a funded account remains mysterious and unsolved"
     ],
     "action_items": [
-      "Conduct a thorough review of the app's security measures to prevent incorrect auto-linking of bank accounts and ensure data accuracy",
-      "Improve the customer support system by providing multiple channels for users to connect with live agents and resolve issues promptly",
-      "Revise the recent UI update to address user concerns and make the app more intuitive and user-friendly"
+      "Conduct a thorough review of the app's UI and UX to identify and fix glitches and navigation issues",
+      "Improve the app's communication and support channels to provide timely and helpful responses to user queries and concerns",
+      "Investigate and resolve issues related to account and payment problems, such as incorrect auto-linked bank accounts and high transaction fees"
     ],
     "action_ideas": [
-      "Conduct a thorough review of the app's security measures to prevent incorrect auto-linking of bank accounts and ensure data accuracy",
-      "Improve the customer support system by providing multiple channels for users to connect with live agents and resolve issues promptly",
-      "Revise the recent UI update to address user concerns and make the app more intuitive and user-friendly"
+      "Conduct a thorough review of the app's UI and UX to identify and fix glitches and navigation issues",
+      "Improve the app's communication and support channels to provide timely and helpful responses to user queries and concerns",
+      "Investigate and resolve issues related to account and payment problems, such as incorrect auto-linked bank accounts and high transaction fees"
     ],
     "fee_scenarios": [
       {
         "type": "exit_load",
         "scenario_name": "Mutual Fund Exit Load",
         "explanation_bullets": [
-          "A mutual fund exit load is a fee charged to investors when they redeem their units from a mutual fund scheme.",
-          "The exit load is typically a percentage of the redemption amount and is deducted from the investor's redemption proceeds.",
-          "The purpose of an exit load is to discourage investors from withdrawing their money from the mutual fund too quickly.",
-          "The exit load percentage and the time period for which it is applicable vary from one mutual fund scheme to another.",
-          "For example, a mutual fund scheme may charge an exit load of 1% if the units are redeemed within one year of investment.",
-          "The exit load is usually specified in the mutual fund scheme's offer document and key information memorandum."
+          "A mutual fund exit load is a fee charged to investors when they withdraw units from a mutual fund scheme.",
+          "The fee is usually expressed as a percentage of the withdrawal amount or the net asset value (NAV) of the units being redeemed.",
+          "Exit loads are typically applied to redemptions made within a specific period, such as a year, from the date of investment.",
+          "The purpose of an exit load is to discourage early withdrawals and to compensate the fund for the costs associated with redeeming units.",
+          "The exit load percentage and the timeframe for its applicability vary across different mutual fund schemes.",
+          "Investors should review the scheme's documents and terms to understand the exit load structure before making an investment."
         ],
         "source_links": [
           "https://www.indmoney.com/mutual-funds/sbi-psu-direct-growth-3465",
@@ -54,12 +62,12 @@
         "type": "brokerage_fee",
         "scenario_name": "Brokerage Fee",
         "explanation_bullets": [
-          "A brokerage fee is a charge levied by a broker or brokerage firm for facilitating transactions.",
-          "This fee is typically a percentage of the transaction amount or a flat fee per transaction.",
-          "Brokerage fees can vary depending on the type of investment, such as stocks, bonds, or mutual funds.",
-          "These fees are usually deducted from the investor's account at the time of transaction.",
-          "Brokerage fees can also include other charges, such as maintenance fees or management fees.",
-          "The amount and structure of brokerage fees can differ between brokerage firms and investment products."
+          "A brokerage fee is a charge levied by a broker or brokerage firm for executing buy and sell orders on behalf of clients.",
+          "It is typically a percentage of the transaction value or a flat fee per transaction.",
+          "Brokerage fees can vary depending on the type of investment, such as stocks, options, or mutual funds.",
+          "These fees are usually deducted from the client's account at the time of the transaction.",
+          "Brokerage fees can also include other charges, such as maintenance fees or inactivity fees.",
+          "The fee structure and rates are usually disclosed by the brokerage firm in their terms and conditions or fee schedule."
         ],
         "source_links": [
           "https://www.indmoney.com/mutual-funds/icici-prudential-infrastructure-fund-direct-plan-growth-3333",
@@ -68,55 +76,63 @@
         "last_checked": "2026-05-02"
       }
     ],
-    "review_count": 185,
+    "review_count": 186,
     "weekly_pulse": {
-      "summary": "This week's review pulse highlights significant concerns with the app's performance, security, and customer support. Many users have reported glitches, incorrect auto-linked bank accounts, and unresponsive customer care. The recent UI update has also received negative feedback, with users finding it less intuitive and user-friendly.",
+      "summary": "The weekly review pulse indicates a strong emphasis on User Experience and Interface (30%) and Technical Issues and Bugs (25%). Many users have reported issues with the app's UI, including glitches, poor navigation, and missing features. Some have also experienced problems with account and payment issues, such as incorrect auto-linked bank accounts and high transaction fees. The app's communication and support have also been criticized for being unresponsive and unhelpful.",
       "themes": [
         {
-          "name": "Product Experience",
-          "percentage": 40
-        },
-        {
-          "name": "Customer Support and Security",
+          "name": "User Experience and Interface",
           "percentage": 30
         },
         {
-          "name": "Fees, Features, and Functionality",
-          "percentage": 30
+          "name": "Technical Issues and Bugs",
+          "percentage": 25
+        },
+        {
+          "name": "Fees, Features, and Transparency",
+          "percentage": 20
+        },
+        {
+          "name": "Account and Payment Issues",
+          "percentage": 15
+        },
+        {
+          "name": "Communication and Support",
+          "percentage": 10
         }
       ],
       "quotes": [
-        "Earlier the app used to be nice and responsive while trading in options. Now app is full of glitches and not showing premium properly.",
-        "Serious Concern Regarding Incorrect Auto-Linked Bank Account",
-        "I am trying to connect with customer care from friday 18 april,2026 from app but there is no option to connect live agent"
+        "The new Dashboard is cheap and not helpful",
+        "The app is full of glitches and not showing premium properly, even stop loss and TP is not triggered",
+        "The customer support is poor, multiple attempts at depositing funds from a funded account remains mysterious and unsolved"
       ],
       "action_items": [
-        "Conduct a thorough review of the app's security measures to prevent incorrect auto-linking of bank accounts and ensure data accuracy",
-        "Improve the customer support system by providing multiple channels for users to connect with live agents and resolve issues promptly",
-        "Revise the recent UI update to address user concerns and make the app more intuitive and user-friendly"
+        "Conduct a thorough review of the app's UI and UX to identify and fix glitches and navigation issues",
+        "Improve the app's communication and support channels to provide timely and helpful responses to user queries and concerns",
+        "Investigate and resolve issues related to account and payment problems, such as incorrect auto-linked bank accounts and high transaction fees"
       ]
     },
     "email_draft": {
       "subject": "Weekly INDMoney Voice of Customer Pulse",
-      "body": "This week's review pulse highlights significant concerns with the app's performance, security, and customer support. Many users have reported glitches, incorrect auto-linked bank accounts, and unresponsive customer care. The recent UI update has also received negative feedback, with users finding it less intuitive and user-friendly."
+      "body": "The weekly review pulse indicates a strong emphasis on User Experience and Interface (30%) and Technical Issues and Bugs (25%). Many users have reported issues with the app's UI, including glitches, poor navigation, and missing features. Some have also experienced problems with account and payment issues, such as incorrect auto-linked bank accounts and high transaction fees. The app's communication and support have also been criticized for being unresponsive and unhelpful."
     }
   },
   "reviews": [
     {
       "user_name": null,
-      "review_text": "Customer support took 2 days to reply to my query. Need to improve response time. (Ref: 2281)",
-      "rating": 5,
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 2962)",
+      "rating": 1,
       "platform": "ios",
-      "review_date": "2026-05-01T11:36:38.243640",
+      "review_date": "2026-05-02T12:42:14.962341",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 7383)",
-      "rating": 5,
+      "review_text": "Security features are top-notch. Feel safe with my money and data privacy. (Ref: 5780)",
+      "rating": 2,
       "platform": "ios",
-      "review_date": "2026-05-01T11:36:38.243589",
+      "review_date": "2026-05-01T12:42:14.961854",
       "category": null,
       "sentiment": null
     },
@@ -140,10 +156,19 @@
     },
     {
       "user_name": null,
-      "review_text": "Excellent app for tracking all investments in one place. Highly recommended for iOS users. (Ref: 6088)",
-      "rating": 3,
+      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 4905)",
+      "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-30T11:36:38.242764",
+      "review_date": "2026-04-30T12:42:14.962296",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 9751)",
+      "rating": 1,
+      "platform": "ios",
+      "review_date": "2026-04-30T12:42:14.961825",
       "category": null,
       "sentiment": null
     },
@@ -167,28 +192,10 @@
     },
     {
       "user_name": null,
-      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 2691)",
-      "rating": 1,
-      "platform": "ios",
-      "review_date": "2026-04-29T11:36:38.243584",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 5826)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-29T11:36:38.243070",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 8844)",
+      "review_text": "Charges are slightly high compared to others, but the experience makes up for it. (Ref: 3922)",
       "rating": 2,
       "platform": "ios",
-      "review_date": "2026-04-29T11:36:38.242051",
+      "review_date": "2026-04-29T12:42:14.961704",
       "category": null,
       "sentiment": null
     },
@@ -257,10 +264,10 @@
     },
     {
       "user_name": null,
-      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 3824)",
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 7735)",
       "rating": 2,
       "platform": "ios",
-      "review_date": "2026-04-28T11:36:38.243807",
+      "review_date": "2026-04-28T12:42:14.961409",
       "category": null,
       "sentiment": null
     },
@@ -329,6 +336,15 @@
     },
     {
       "user_name": null,
+      "review_text": "Security features are top-notch. Feel safe with my money and data privacy. (Ref: 7318)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-27T12:42:14.960962",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
       "review_text": "rupees 10 brokerage? my foot. traders beware this app scams you to trade more with this lie. because in reality it is far from the truth. every trade charges you 20 per order. that means Rs40 per executed trade. doesn't seem like much but compund that on top of garbage govt taxes. that's a lot of taxes and brokerage charged for per trade. and the brokerage fee increases as you trade more.",
       "rating": 1,
       "platform": "android",
@@ -347,19 +363,55 @@
     },
     {
       "user_name": null,
-      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 2804)",
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 6863)",
       "rating": 3,
       "platform": "ios",
-      "review_date": "2026-04-26T11:36:38.242163",
+      "review_date": "2026-04-26T12:42:14.962444",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 1107)",
+      "review_text": "Security features are top-notch. Feel safe with my money and data privacy. (Ref: 3984)",
       "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-26T11:36:38.241745",
+      "review_date": "2026-04-26T12:42:14.962246",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 6516)",
+      "rating": 3,
+      "platform": "ios",
+      "review_date": "2026-04-26T12:42:14.961858",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Customer support took 2 days to reply to my query. Need to improve response time. (Ref: 6218)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-26T12:42:14.961413",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Love the family account feature, helps in consolidated view of our finances. (Ref: 8359)",
+      "rating": 2,
+      "platform": "ios",
+      "review_date": "2026-04-26T12:42:14.960988",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Customer support took 2 days to reply to my query. Need to improve response time. (Ref: 5664)",
+      "rating": 4,
+      "platform": "ios",
+      "review_date": "2026-04-26T12:42:14.960734",
       "category": null,
       "sentiment": null
     },
@@ -392,19 +444,10 @@
     },
     {
       "user_name": null,
-      "review_text": "Customer support took 2 days to reply to my query. Need to improve response time. (Ref: 2387)",
-      "rating": 1,
+      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 8456)",
+      "rating": 2,
       "platform": "ios",
-      "review_date": "2026-04-25T11:36:38.242559",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 3614)",
-      "rating": 5,
-      "platform": "ios",
-      "review_date": "2026-04-25T11:36:38.241486",
+      "review_date": "2026-04-25T12:42:14.960984",
       "category": null,
       "sentiment": null
     },
@@ -473,6 +516,15 @@
     },
     {
       "user_name": null,
+      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 6161)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-24T12:42:14.962527",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
       "review_text": "customer support is poor; multiple attempts at depositing funds from a funded account, in which the first deposit was successhul remains mysterious and unsolved, customer support is invisible. Any help will be appreciated",
       "rating": 2,
       "platform": "android",
@@ -500,37 +552,28 @@
     },
     {
       "user_name": null,
-      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 4937)",
+      "review_text": "Excellent app for tracking all investments in one place. Highly recommended for iOS users. (Ref: 2347)",
       "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-23T11:36:38.243749",
+      "review_date": "2026-04-23T12:42:14.962300",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "Excellent app for tracking all investments in one place. Highly recommended for iOS users. (Ref: 5973)",
-      "rating": 2,
-      "platform": "ios",
-      "review_date": "2026-04-23T11:36:38.243305",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 7736)",
-      "rating": 5,
-      "platform": "ios",
-      "review_date": "2026-04-23T11:36:38.242203",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Excellent app for tracking all investments in one place. Highly recommended for iOS users. (Ref: 3629)",
+      "review_text": "Customer support took 2 days to reply to my query. Need to improve response time. (Ref: 6238)",
       "rating": 4,
       "platform": "ios",
-      "review_date": "2026-04-23T11:36:38.241892",
+      "review_date": "2026-04-23T12:42:14.961901",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "App crashes sometimes when opening the portfolio section. Please look into this. (Ref: 8918)",
+      "rating": 1,
+      "platform": "ios",
+      "review_date": "2026-04-23T12:42:14.961587",
       "category": null,
       "sentiment": null
     },
@@ -599,28 +642,10 @@
     },
     {
       "user_name": null,
-      "review_text": "App crashes sometimes when opening the portfolio section. Please look into this. (Ref: 1397)",
+      "review_text": "Security features are top-notch. Feel safe with my money and data privacy. (Ref: 4358)",
       "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-22T11:36:38.243799",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Charges are slightly high compared to others, but the experience makes up for it. (Ref: 9315)",
-      "rating": 2,
-      "platform": "ios",
-      "review_date": "2026-04-22T11:36:38.243770",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "App crashes sometimes when opening the portfolio section. Please look into this. (Ref: 6129)",
-      "rating": 5,
-      "platform": "ios",
-      "review_date": "2026-04-22T11:36:38.241546",
+      "review_date": "2026-04-22T12:42:14.962189",
       "category": null,
       "sentiment": null
     },
@@ -707,37 +732,10 @@
     },
     {
       "user_name": null,
-      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 3287)",
-      "rating": 1,
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 3670)",
+      "rating": 3,
       "platform": "ios",
-      "review_date": "2026-04-20T11:36:38.243673",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 1686)",
-      "rating": 5,
-      "platform": "ios",
-      "review_date": "2026-04-20T11:36:38.243334",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 8906)",
-      "rating": 2,
-      "platform": "ios",
-      "review_date": "2026-04-20T11:36:38.241929",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Security features are top-notch. Feel safe with my money and data privacy. (Ref: 6704)",
-      "rating": 5,
-      "platform": "ios",
-      "review_date": "2026-04-20T11:36:38.241197",
+      "review_date": "2026-04-20T12:42:14.961590",
       "category": null,
       "sentiment": null
     },
@@ -815,10 +813,10 @@
     },
     {
       "user_name": null,
-      "review_text": "Charges are slightly high compared to others, but the experience makes up for it. (Ref: 5909)",
-      "rating": 1,
+      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 3239)",
+      "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-19T11:36:38.243394",
+      "review_date": "2026-04-19T12:42:14.962275",
       "category": null,
       "sentiment": null
     },
@@ -833,46 +831,19 @@
     },
     {
       "user_name": null,
+      "review_text": "App crashes sometimes when opening the portfolio section. Please look into this. (Ref: 9931)",
+      "rating": 2,
+      "platform": "ios",
+      "review_date": "2026-04-18T12:42:14.961572",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
       "review_text": "The USD conversion via ICICI Bank is misleading. The exchange rate shown in the INDMoney app is not the rate actually applied\u2014there\u2019s a difference of about \u20b90.30 per dollar, with the bank charging a higher rate. When I contacted ICICI Bank, they stated that since this is a third-party transaction, they cannot address the discrepancy. On the other hand, INDMoney\u2019s support team was unable to provide a clear explanation for the difference in exchange rates.",
       "rating": 3,
       "platform": "android",
       "review_date": "2026-04-18T12:20:46",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Security features are top-notch. Feel safe with my money and data privacy. (Ref: 9013)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-18T11:36:38.243627",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Charges are slightly high compared to others, but the experience makes up for it. (Ref: 7394)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-18T11:36:38.242978",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Excellent app for tracking all investments in one place. Highly recommended for iOS users. (Ref: 8414)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-18T11:36:38.241639",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 5912)",
-      "rating": 1,
-      "platform": "ios",
-      "review_date": "2026-04-18T11:36:38.241278",
       "category": null,
       "sentiment": null
     },
@@ -896,28 +867,19 @@
     },
     {
       "user_name": null,
-      "review_text": "Charges are slightly high compared to others, but the experience makes up for it. (Ref: 4864)",
+      "review_text": "Charges are slightly high compared to others, but the experience makes up for it. (Ref: 9918)",
       "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-17T11:36:38.243699",
+      "review_date": "2026-04-17T12:42:14.961873",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 7352)",
-      "rating": 2,
-      "platform": "ios",
-      "review_date": "2026-04-17T11:36:38.242228",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 9463)",
+      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 5352)",
       "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-17T11:36:38.242076",
+      "review_date": "2026-04-17T12:42:14.961167",
       "category": null,
       "sentiment": null
     },
@@ -932,10 +894,28 @@
     },
     {
       "user_name": null,
-      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 2551)",
-      "rating": 1,
+      "review_text": "Love the family account feature, helps in consolidated view of our finances. (Ref: 2900)",
+      "rating": 2,
       "platform": "ios",
-      "review_date": "2026-04-16T11:36:38.242268",
+      "review_date": "2026-04-16T12:42:14.961423",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Charges are slightly high compared to others, but the experience makes up for it. (Ref: 7896)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-16T12:42:14.961006",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 2773)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-16T12:42:14.960871",
       "category": null,
       "sentiment": null
     },
@@ -1004,37 +984,28 @@
     },
     {
       "user_name": null,
+      "review_text": "Customer support took 2 days to reply to my query. Need to improve response time. (Ref: 6526)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-15T12:42:14.961865",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 9491)",
+      "rating": 3,
+      "platform": "ios",
+      "review_date": "2026-04-15T12:42:14.960444",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
       "review_text": "line chart was not good this updated version to compare previous one",
       "rating": 4,
       "platform": "android",
       "review_date": "2026-04-15T11:57:23",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Customer support took 2 days to reply to my query. Need to improve response time. (Ref: 2347)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-15T11:36:38.243381",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 6229)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-15T11:36:38.242870",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Love the family account feature, helps in consolidated view of our finances. (Ref: 3103)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-15T11:36:38.242138",
       "category": null,
       "sentiment": null
     },
@@ -1148,6 +1119,15 @@
     },
     {
       "user_name": null,
+      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 6510)",
+      "rating": 4,
+      "platform": "ios",
+      "review_date": "2026-04-14T12:42:14.962208",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
       "review_text": "I want you to add notification categories where I get to decide whether or not I want your ad's when you charge me for services that I use for US based investments",
       "rating": 2,
       "platform": "android",
@@ -1175,19 +1155,10 @@
     },
     {
       "user_name": null,
-      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 1797)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-13T11:36:38.243711",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Excellent app for tracking all investments in one place. Highly recommended for iOS users. (Ref: 9556)",
+      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 4627)",
       "rating": 1,
       "platform": "ios",
-      "review_date": "2026-04-13T11:36:38.242800",
+      "review_date": "2026-04-13T12:42:14.962591",
       "category": null,
       "sentiment": null
     },
@@ -1197,24 +1168,6 @@
       "rating": 4,
       "platform": "android",
       "review_date": "2026-04-12T17:56:26",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 4251)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-12T11:36:38.243004",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 8280)",
-      "rating": 2,
-      "platform": "ios",
-      "review_date": "2026-04-12T11:36:38.242874",
       "category": null,
       "sentiment": null
     },
@@ -1233,6 +1186,15 @@
       "rating": 5,
       "platform": "android",
       "review_date": "2026-04-11T19:34:23",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 2093)",
+      "rating": 1,
+      "platform": "ios",
+      "review_date": "2026-04-11T12:42:14.962167",
       "category": null,
       "sentiment": null
     },
@@ -1301,6 +1263,51 @@
     },
     {
       "user_name": null,
+      "review_text": "Security features are top-notch. Feel safe with my money and data privacy. (Ref: 1281)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-10T12:42:14.962447",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 8812)",
+      "rating": 1,
+      "platform": "ios",
+      "review_date": "2026-04-10T12:42:14.961883",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 4351)",
+      "rating": 5,
+      "platform": "ios",
+      "review_date": "2026-04-10T12:42:14.961723",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 1463)",
+      "rating": 2,
+      "platform": "ios",
+      "review_date": "2026-04-10T12:42:14.960639",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 7438)",
+      "rating": 1,
+      "platform": "ios",
+      "review_date": "2026-04-10T12:42:14.960516",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
       "review_text": "new interference of order is not good please change it is very complex to once order place if I have to cancel we have to in another tab of orders it is easy to do while trading \ud83e\udee1\ud83e\udd2e",
       "rating": 3,
       "platform": "android",
@@ -1364,19 +1371,19 @@
     },
     {
       "user_name": null,
-      "review_text": "UI and UX both are so confusing, it's like to much information clustering into single panel, so irritating.",
-      "rating": 1,
-      "platform": "android",
-      "review_date": "2026-04-09T12:01:09",
+      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 5247)",
+      "rating": 2,
+      "platform": "ios",
+      "review_date": "2026-04-09T12:42:14.961416",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "Love the family account feature, helps in consolidated view of our finances. (Ref: 5584)",
-      "rating": 3,
-      "platform": "ios",
-      "review_date": "2026-04-09T11:36:38.242924",
+      "review_text": "UI and UX both are so confusing, it's like to much information clustering into single panel, so irritating.",
+      "rating": 1,
+      "platform": "android",
+      "review_date": "2026-04-09T12:01:09",
       "category": null,
       "sentiment": null
     },
@@ -1418,19 +1425,37 @@
     },
     {
       "user_name": null,
-      "review_text": "The spend analysis option is not available in the latest update. I linked all my bank accounts and credit cards so that i can track my spends easily. Now it is gone",
-      "rating": 1,
-      "platform": "android",
-      "review_date": "2026-04-08T11:59:10",
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 2770)",
+      "rating": 4,
+      "platform": "ios",
+      "review_date": "2026-04-08T12:42:14.962427",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 9616)",
-      "rating": 3,
+      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 4560)",
+      "rating": 2,
       "platform": "ios",
-      "review_date": "2026-04-08T11:36:38.243745",
+      "review_date": "2026-04-08T12:42:14.961784",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 7023)",
+      "rating": 4,
+      "platform": "ios",
+      "review_date": "2026-04-08T12:42:14.960528",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "The spend analysis option is not available in the latest update. I linked all my bank accounts and credit cards so that i can track my spends easily. Now it is gone",
+      "rating": 1,
+      "platform": "android",
+      "review_date": "2026-04-08T11:59:10",
       "category": null,
       "sentiment": null
     },
@@ -1526,10 +1551,10 @@
     },
     {
       "user_name": null,
-      "review_text": "Best fintech experience on iOS so far. Keeps getting better with every update. (Ref: 8220)",
-      "rating": 4,
+      "review_text": "Love the family account feature, helps in consolidated view of our finances. (Ref: 4191)",
+      "rating": 1,
       "platform": "ios",
-      "review_date": "2026-04-07T11:36:38.242680",
+      "review_date": "2026-04-07T12:42:14.961249",
       "category": null,
       "sentiment": null
     },
@@ -1589,19 +1614,28 @@
     },
     {
       "user_name": null,
-      "review_text": "Please add more direct mutual fund options and better filtering for stocks. (Ref: 9418)",
-      "rating": 3,
+      "review_text": "App crashes sometimes when opening the portfolio section. Please look into this. (Ref: 9894)",
+      "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-06T11:36:38.243795",
+      "review_date": "2026-04-06T12:42:14.962066",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 7240)",
-      "rating": 5,
+      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 8635)",
+      "rating": 4,
       "platform": "ios",
-      "review_date": "2026-04-06T11:36:38.241941",
+      "review_date": "2026-04-06T12:42:14.961937",
+      "category": null,
+      "sentiment": null
+    },
+    {
+      "user_name": null,
+      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 2074)",
+      "rating": 2,
+      "platform": "ios",
+      "review_date": "2026-04-06T12:42:14.961453",
       "category": null,
       "sentiment": null
     },
@@ -1661,19 +1695,19 @@
     },
     {
       "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 7723)",
+      "review_text": "App crashes sometimes when opening the portfolio section. Please look into this. (Ref: 2898)",
       "rating": 5,
       "platform": "ios",
-      "review_date": "2026-04-05T11:36:38.243053",
+      "review_date": "2026-04-05T12:42:14.962307",
       "category": null,
       "sentiment": null
     },
     {
       "user_name": null,
-      "review_text": "The US stocks feature is amazing and very smooth. Best in the Indian market right now. (Ref: 4962)",
-      "rating": 3,
+      "review_text": "Instant withdrawals really work! Impressed with the speed and reliability. (Ref: 1167)",
+      "rating": 1,
       "platform": "ios",
-      "review_date": "2026-04-05T11:36:38.241991",
+      "review_date": "2026-04-05T12:42:14.961279",
       "category": null,
       "sentiment": null
     },
@@ -1710,15 +1744,6 @@
       "rating": 5,
       "platform": "android",
       "review_date": "2026-04-04T16:21:40",
-      "category": null,
-      "sentiment": null
-    },
-    {
-      "user_name": null,
-      "review_text": "UI is clean but can be a bit slow on older iPhones during peak trading hours. (Ref: 2421)",
-      "rating": 4,
-      "platform": "ios",
-      "review_date": "2026-04-04T11:36:38.243343",
       "category": null,
       "sentiment": null
     },
